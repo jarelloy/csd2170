@@ -34,9 +34,11 @@
  */
 
 #include <stdio.h>
+#include <iostream>
 
 // For the CUDA runtime routines (prefixed with "cuda_")
-#include <cuda_runtime.h>
+#include "cuda_runtime.h"
+#include "device_launch_parameters.h"
 
 #include <helper_cuda.h>
 /**
@@ -58,6 +60,7 @@ __global__ void vectorAdd(const float *A, const float *B, float *C,
  * Host main routine
  */
 int main(void) {
+  std::cout << "OI\n";
   // Error code to check return values for CUDA calls
   cudaError_t err = cudaSuccess;
 
