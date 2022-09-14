@@ -19,7 +19,19 @@ typedef unsigned int uint;
 
 __global__ void heatDistrCalc(float* in, float* out, uint nRowPoints)
 {
+  int row = blockIdx.x * blockDim.x + threadIdx.x;
+  int col = blockIdx.y * blockDim.y + threadIdx.y;
 
+  int i = row * nRowPoints + col;
+  if (row < nRowPoints-1 && row > 0 && col > 0 && col < nRowPoints-1)
+  {
+    out[row * nRowPoints + col] =
+			in[(row-1) * nRowPoints + col] +
+			in[(row+1) * nRowPoints + col] +
+			in[row * nRowPoints + col+1] +
+			in[row * nRowPoints + col-1];
+		out[row * nRowPoints + col] *= 0.25f;
+  }
 }
 
 ///not required in A1
@@ -31,21 +43,31 @@ __global__ void heatDistrCalcShm(float* in, float* out, uint nRowPoints)
 
 __global__ void heatDistrUpdate(float* in, float* out, uint nRowPoints)
 {
+  int col = blockIdx.x * blockDim.x + threadIdx.x;
+  int row = blockIdx.y * blockDim.y + threadIdx.y;
 
+  if (row < nRowPoints && col < nRowPoints)
+  {
+    out[row * nRowPoints + col] = in[row * nRowPoints + col];
+  }
 }
 
 extern "C"
 void heatDistrGPU(float* d_DataIn, float* d_DataOut, uint nRowPoints, uint nIter)
 {
-  dim3 DimBlock(BLOCK_SIZE, BLOCK_SIZE, 1);
-  dim3 DimGrid2(ceil((nRowPoints) / BLOCK_SIZE), ceil((nRowPoints) / BLOCK_SIZE), 1);
+	dim3 DimBlock(BLOCK_SIZE, BLOCK_SIZE, 1);
+	dim3 DimGrid2(ceil(((float)nRowPoints) / BLOCK_SIZE), ceil(((float)nRowPoints) / BLOCK_SIZE), 1);
 
-  for (uint k = 0; k < nIter; k++) {
-    heatDistrCalc <<< DimGrid2, DimBlock >>> (d_DataIn, d_DataOut, nRowPoints);
-    getLastCudaError("heatDistrCalc failed\n");
-    cudaDeviceSynchronize();
-    heatDistrUpdate <<< DimGrid2, DimBlock >>> (d_DataOut, d_DataIn, nRowPoints);
-    getLastCudaError("heatDistrUpdate failed\n");
-    cudaDeviceSynchronize();
-  }
+	for (uint k = 0; k < nIter; k++) {
+		heatDistrCalc << <DimGrid2, DimBlock >> > ((float*)d_DataIn,
+			(float*)d_DataOut,
+			nRowPoints);
+		getLastCudaError("heatDistrCalc failed\n");
+		cudaDeviceSynchronize();
+		heatDistrUpdate << < DimGrid2, DimBlock >> > ((float*)d_DataOut,
+			(float*)d_DataIn,
+			nRowPoints);
+		getLastCudaError("heatDistrUpdate failed\n");
+		cudaDeviceSynchronize();
+	}
 }

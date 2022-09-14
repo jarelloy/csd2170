@@ -20,10 +20,12 @@ extern "C" void initPoints(
   {
     for (uint x = 0; x < nRowPoints; ++x)
     {
-      if (x == 0 && y >= 10 && y <= 30)       pointIn[y * nRowPoints + x] = pointOut[y * nRowPoints + x] = 65.56f;
-      else if (x == 0 || x == nRowPoints-1 || 
-        y == 0 || y == nRowPoints-1)          pointIn[y * nRowPoints + x] = pointOut[y * nRowPoints + x] = 26.67f;
-      else                                    pointIn[y * nRowPoints + x] = pointOut[y * nRowPoints + x] = 0.0f;
+      if (y == 0 && x >= 10 && x <= 30)       
+        pointIn[y * nRowPoints + x] = pointOut[y * nRowPoints + x] = 65.56f;
+      else if (x == 0 || x == nRowPoints-1 || y == 0 || y == nRowPoints-1)          
+        pointIn[y * nRowPoints + x] = pointOut[y * nRowPoints + x] = 26.67f;
+      else                                    
+        pointIn[y * nRowPoints + x] = pointOut[y * nRowPoints + x] = 0.0f;
     }
   }
 }
@@ -37,19 +39,17 @@ extern "C" void heatDistrCPU(
 {
   for (uint n = 0; n < nIter; ++n)
   {
-    for (uint y = 0; y < nRowPoints; ++ y)
+    for (uint y = 1; y < nRowPoints-1; ++ y)
     {
-      for (uint x = 0; x < nRowPoints; ++x)
+      for (uint x = 1; x < nRowPoints-1; ++x)
       {
-        uint points = 0;
         float total = 0.0f;
-        if (x != 0) { total += pointIn[y * nRowPoints + x - 1]; ++points; }
-        if (x != nRowPoints - 1) { total += pointIn[y * nRowPoints + x + 1]; ++points; }
-        if (y != 0) { total += pointIn[(y - 1) * nRowPoints + x]; ++points; }
-        if (y != nRowPoints-1) { total += pointIn[(y + 1) * nRowPoints + x]; ++points; }
+        if (x != 0) { total += pointIn[y * nRowPoints + x - 1]; }
+        if (x != nRowPoints - 1) { total += pointIn[y * nRowPoints + x + 1]; }
+        if (y != 0) { total += pointIn[(y - 1) * nRowPoints + x]; }
+        if (y != nRowPoints-1) { total += pointIn[(y + 1) * nRowPoints + x]; }
 
-        total /= (float)points;
-        pointOut[y * nRowPoints + x] = total;
+        pointOut[y * nRowPoints + x] = total * 0.25f;
       }
     }
 
