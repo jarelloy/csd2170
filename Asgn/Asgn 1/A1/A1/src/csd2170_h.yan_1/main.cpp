@@ -116,7 +116,7 @@ int main(int argc, char **argv)
 	sdkDeleteTimer(&hTimer);
 
 	printf(" ...comparing the results\n");
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
 	for (uint i = 0; i < nRowPoints; i++) {
 		for (uint j = 0; j < nRowPoints; j++) {

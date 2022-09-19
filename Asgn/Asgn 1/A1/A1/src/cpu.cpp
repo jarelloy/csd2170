@@ -1,15 +1,27 @@
-/*
-* Copyright 2022 Digipen.  All rights reserved.
-*
-* Please refer to the end user license associated
-* with this source code for terms and conditions that govern your use of
-* this software. Any use, reproduction, disclosure, or distribution of
-* this software and related documentation outside the terms 
-* is strictly prohibited.
-*/
+/* Start Header *****************************************************************/
+
+/*! \file cpu.cpp
+
+     \author Derwin Yan Hong Rui 2000579
+
+     \par h.yn@digipen.edu
+
+     \date 16 Sept 2022
+
+     \brief Copyright (C) 2022 DigiPen Institute of Technology.
+
+  Reproduction or disclosure of this file or its contents without the prior written consent of DigiPen Institute of Technology is prohibited. */
+
+/* End Header *******************************************************************/
 #include "heat.h"
 #include <memory>
 
+/**
+ * @brief    Initialize default heat values in array
+ * @param    pointIn - input array
+ * @param    pointOut - output array
+ * @param    nRowPoints - width and height of array
+ */
 extern "C" void initPoints(
   float *pointIn,
   float *pointOut,
@@ -30,6 +42,13 @@ extern "C" void initPoints(
   }
 }
 
+/**
+ * @brief    Simulate heat distribution on CPU side
+ * @param    pointIn - input array
+ * @param    pointOut - output array
+ * @param    nRowPoints - width and height of array
+ * @param    nIter - number of times to simulate
+ */
 extern "C" void heatDistrCPU(
   float *pointIn,
   float *pointOut,
