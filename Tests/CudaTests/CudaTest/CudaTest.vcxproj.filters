@@ -31,5 +31,8 @@
     <CudaCompile Include="IntAdder.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
+    <CudaCompile Include="WarpDivergence.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
   </ItemGroup>
 </Project>

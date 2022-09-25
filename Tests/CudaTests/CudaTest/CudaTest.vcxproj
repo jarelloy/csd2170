@@ -117,7 +117,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\derwi\Documents\_DIGIPEN ALL\_Digipen Y3S1\csd2170 %28massive%29\csd2170\Tests\CudaTests\Vendor\cuda11.7;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\Documents\_Digipen\_Digipen Y3S1\csd2170 %28massive%29\csd2170\Tests\CudaTests\Vendor\cuda11.7;C:\Users\derwi\Documents\_DIGIPEN ALL\_Digipen Y3S1\csd2170 %28massive%29\csd2170\Tests\CudaTests\Vendor\cuda11.7;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -150,6 +150,7 @@
   <ItemGroup>
     <CudaCompile Include="IntAdder.cu" />
     <CudaCompile Include="MatrixMultiplication.cu" />
+    <CudaCompile Include="WarpDivergence.cu" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

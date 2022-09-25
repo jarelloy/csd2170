@@ -7,3 +7,4 @@
 
 void IntAdder();
 void MatrixMult();
+void WarpDivergence();
