@@ -148,6 +148,7 @@
     <ClInclude Include="Tests.h" />
   </ItemGroup>
   <ItemGroup>
+    <CudaCompile Include="Diverence_1D.cu" />
     <CudaCompile Include="IntAdder.cu" />
     <CudaCompile Include="MatrixMultiplication.cu" />
     <CudaCompile Include="WarpDivergence.cu" />

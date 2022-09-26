@@ -8,3 +8,4 @@
 void IntAdder();
 void MatrixMult();
 void WarpDivergence();
+void Divergence_1D();

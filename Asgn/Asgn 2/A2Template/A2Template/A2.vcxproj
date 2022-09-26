@@ -57,7 +57,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;WIN64;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(CudaToolkitIncludeDir);c:\cs398\CUDA Samples\v11.7\Common;E:\Documents\_Digipen\_Digipen Y3S1\csd2170 %28massive%29\csd2170\Asgn\Vendor\cuda11.7</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\derwi\Documents\_DIGIPEN ALL\_Digipen Y3S1\csd2170 %28massive%29\csd2170\Asgn\Vendor\cuda11.7;%(AdditionalIncludeDirectories);$(CudaToolkitIncludeDir);c:\cs398\CUDA Samples\v11.7\Common;E:\Documents\_Digipen\_Digipen Y3S1\csd2170 %28massive%29\csd2170\Asgn\Vendor\cuda11.7</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -75,7 +75,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;WIN64;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(CudaToolkitIncludeDir);C:\cs398\CUDA Samples\v11.7\Common;E:\Documents\_Digipen\_Digipen Y3S1\csd2170 %28massive%29\csd2170\Asgn\Vendor\cuda11.7</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\derwi\Documents\_DIGIPEN ALL\_Digipen Y3S1\csd2170 %28massive%29\csd2170\Asgn\Vendor\cuda11.7;%(AdditionalIncludeDirectories);$(CudaToolkitIncludeDir);C:\cs398\CUDA Samples\v11.7\Common;E:\Documents\_Digipen\_Digipen Y3S1\csd2170 %28massive%29\csd2170\Asgn\Vendor\cuda11.7</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

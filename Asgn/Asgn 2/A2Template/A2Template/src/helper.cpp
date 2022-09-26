@@ -14,7 +14,8 @@ FLOAT_TYPE* createData(int nRows, int nCols)
 {
 	FLOAT_TYPE* data = (FLOAT_TYPE*)malloc(sizeof(FLOAT_TYPE) * nCols * nRows);
 	int i;
-	for (i = 0; i < nCols * nRows; i++) {
+	for (i = 0; i < nCols * nRows; i++) 
+  {
 		data[i] = ((FLOAT_TYPE)(rand() % 10) - 5) / 5.0f;
 	}
 	return data;
@@ -23,7 +24,16 @@ FLOAT_TYPE* createData(int nRows, int nCols)
 void matrixMultiplyCPU(FLOAT_TYPE* output, FLOAT_TYPE* input0, FLOAT_TYPE* input1,
 	int numARows, int numAColumns, int numBColumns)
 {
-	//your code here
+  for (int y{}; y < numARows; ++y)
+  {
+    for (int x{}; x < numBColumns; ++x)
+    {
+      for (int iter{}; iter < numBColumns; ++iter)
+      {
+
+      }
+    }
+  }
 }
 
 void convertRowColumn(FLOAT_TYPE* dst, FLOAT_TYPE* src, int numRows, int numCols)

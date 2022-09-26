@@ -13,6 +13,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <fstream>
+#include <iomanip>
 /*
 * This sample implements Matrix Multiplication
 */
@@ -26,25 +28,67 @@
 
 #define epsilon 1.0e-3
 
-void correctness_test(int nRun,
-	int numARows,
-	int numACols,
-	int numBCols)
+
+void correctness_test(int nRun,int numARows, int numACols, int numBCols)
 {
-	for (int i=0; i<nRun; i++) {
-		//call createData() to generate random matrix as inputs
-		//matrix multiply cpu results
-		//matrix multiply gpu results
-		//cross-checking cpu and gpu results
+	for (int i=0; i<nRun; i++) 
+  {
+    //Matrix A
+    float* matA = createData(numARows, numACols);
+
+    //Matrix B
+    float* matB = createData(numACols, numBCols);
+
+    //CPU code
+    float* cpuOut{ new float[numARows * numBCols]{} };
+    matrixMultiplyCPU(cpuOut, matA, matB, numARows, numACols, numBCols);
+
+    //GPU code
+    float* gpuOut{ new float[numARows * numBCols]{} };
+    matrixMultiplyGPU(gpuOut, matA, matB, numARows, numBCols, numACols);
+
+
+#define DEBUG_OUTPUT
+#ifdef  DEBUG_OUTPUT
+    //Output CPU + GPU
+    std::ofstream cpuOFS{ "cpu.txt" };
+    std::ofstream gpuOFS{ "gpu.txt" };
+
+    for (int y{}; y < numBCols; ++y) 
+    {
+      for (int x{}; x < numARows; ++x)
+      {
+        int i{ y * numARows + x };
+
+        cpuOFS.width(5);
+        cpuOFS << std::fixed << std::setprecision(2) << cpuOut[i] << ' ';
+        
+        gpuOFS.width(5);
+        gpuOFS << std::fixed << std::setprecision(2) << gpuOut[i] << ' ';
+      }
+      cpuOFS << '\n';
+      gpuOFS << '\n';
+    }
+    gpuOFS.close();
+    cpuOFS.close();
+#endif // DEBUG_OUTPUT
+
+
+    //Check to see if match
+    for (int i{}; i < numARows * numBCols; ++i)
+    {
+      assert(std::abs(cpuOut[i] - gpuOut[i]) <= epsilon);
+    }
+
+    delete[] cpuOut;
+    delete[] gpuOut;
 	}
 }
 
-void efficiency_test(int nRun,
-	int numARows,
-	int numACols,
-	int numBCols)
+void efficiency_test(int nRun, int numARows, int numACols, int numBCols)
 {
-	for (int i = 0; i < nRun; i++) {
+	for (int i = 0; i < nRun; i++) 
+  {
 		//call createData() to generate random matrix as inputs
 		//matrix multiply cpu results
 		//measure the time for matrix multiplication cpu version
@@ -64,14 +108,17 @@ int main(int argc, char** argv)
 	int numBCols = 241;
 	int numBRows = numACols;
 
-	correctness_test(1, 101 - rand() % 10, 101 - rand() % 10, 101 - rand() % 10);
-	correctness_test(1, 200 + rand() % 100, 200 + rand() % 100, 200 + rand() % 100);
-	correctness_test(1, 500 + rand() % 500, 500 + rand() % 500, 500 + rand() % 500);
-	correctness_test(1, 2000, 2000, 2000);
+  correctness_test(1, 4, 4, 1); //Mat * vec simulation
+  correctness_test(1, 4, 4, 4); //Mat * mat simulation
 
-	efficiency_test(10, 100, 100, 100);
-	efficiency_test(10, 500, 500, 500);
-	efficiency_test(10, 1000, 1000, 1000);
+	//correctness_test(1, 101 - rand() % 10, 101 - rand() % 10, 101 - rand() % 10);
+	//correctness_test(1, 200 + rand() % 100, 200 + rand() % 100, 200 + rand() % 100);
+	//correctness_test(1, 500 + rand() % 500, 500 + rand() % 500, 500 + rand() % 500);
+	//correctness_test(1, 2000, 2000, 2000);
+
+	//efficiency_test(10, 100, 100, 100);
+	//efficiency_test(10, 500, 500, 500);
+	//efficiency_test(10, 1000, 1000, 1000);
 
 	return 0;
 }

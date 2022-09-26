@@ -28,25 +28,25 @@ typedef float FLOAT_TYPE;
 #define TILE_WIDTH_RATIO_K (TILE_WIDTH_M / TILE_WIDTH_N)
 
 //create random matrix
-extern "C" FLOAT_TYPE* createData(int nRow, int nCols);
+extern "C" 
+FLOAT_TYPE* createData(int nRow, int nCols);
 
 //convert rows into columns or convert columns into rows for matrix
-extern "C" void convertRowColumn(FLOAT_TYPE* dst, FLOAT_TYPE* src, int numRows, int numCols);
+extern "C" 
+void convertRowColumn(FLOAT_TYPE* dst, FLOAT_TYPE* src, int numRows, int numCols);
 
 ////////////////////////////////////////////////////////////////////////////////
 // CPU version for Matrix Multiplication
 ////////////////////////////////////////////////////////////////////////////////
-extern "C" void matrixMultiplyCPU(FLOAT_TYPE* output, FLOAT_TYPE* input0, FLOAT_TYPE* input1,
-	int numARows, int numAColumns, int numBColumns);
+extern "C" 
+void matrixMultiplyCPU(FLOAT_TYPE* output, FLOAT_TYPE* input0, FLOAT_TYPE* input1,
+  int numARows, int numAColumns, int numBColumns);
 
 ////////////////////////////////////////////////////////////////////////////////
 // GPU version for Matrix Multiplication
 ////////////////////////////////////////////////////////////////////////////////
-extern "C" void matrixMultiplyGPU(FLOAT_TYPE* P,
-	FLOAT_TYPE* M,
-	FLOAT_TYPE* N,
-	int numARows,
-	int numBColumns,
-	int numAColumns);
+extern "C" 
+void matrixMultiplyGPU(FLOAT_TYPE* P, FLOAT_TYPE* M, FLOAT_TYPE* N, 
+  int numARows, int numBColumns, int numAColumns);
 
 #endif

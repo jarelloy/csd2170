@@ -15,29 +15,26 @@
 #include "helper.h"
 
 //P and M column-major, N row-major
-__global__ void matrixMultiply(FLOAT_TYPE* P, const FLOAT_TYPE* M, const FLOAT_TYPE* N,
-	const int m, const int n, const int k) 
+__global__ 
+void matrixMultiply(FLOAT_TYPE* output, const FLOAT_TYPE* input1, const FLOAT_TYPE* input2,
+  const int m, const int n, const int k) 
 {
-	// Shared memory for tiling input N array
-	__shared__ FLOAT_TYPE B_s[TILE_WIDTH_RATIO_K][TILE_WIDTH_N];
+  // Shared memory for tiling input N array
+  __shared__ FLOAT_TYPE B_s[TILE_WIDTH_RATIO_K][TILE_WIDTH_N];
 
-	//your code here
+  //your code here
 }
 
-void matrixMultiplyGPU(FLOAT_TYPE* C,
-	FLOAT_TYPE* A,
-	FLOAT_TYPE* B,
-	int numARows,
-	int numBColumns,
-	int numAColumns)
+void matrixMultiplyGPU(FLOAT_TYPE* output, FLOAT_TYPE* input1, FLOAT_TYPE* input2,
+  int numARows, int numBColumns, int numAColumns)
 {
-	//@@ Initialize the grid and block dimensions here
+  ////@@ Initialize the grid and block dimensions here
 
-	dim3 dimGrid((numARows - 1) / TILE_WIDTH_M + 1, (numBColumns - 1) / TILE_WIDTH_N + 1);
-	dim3 dimBlock(TILE_WIDTH_M, 1);
+  //dim3 dimGrid((numARows - 1) / TILE_WIDTH_M + 1, (numBColumns - 1) / TILE_WIDTH_N + 1);
+  //dim3 dimBlock(TILE_WIDTH_M, 1);
 
-	matrixMultiply <<< dimGrid, dimBlock >>> (C,A,B,numARows,numBColumns,numAColumns);
+  //matrixMultiply <<< dimGrid, dimBlock >>> (C,A,B,numARows,numBColumns,numAColumns);
 
-	getLastCudaError("matrixMultiply failed\n");
-	cudaDeviceSynchronize();
+  //getLastCudaError("matrixMultiply failed\n");
+  //cudaDeviceSynchronize();
 }

@@ -34,5 +34,8 @@
     <CudaCompile Include="WarpDivergence.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
+    <CudaCompile Include="Diverence_1D.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
   </ItemGroup>
 </Project>

@@ -26,7 +26,7 @@ void WarpDivergence()
 
   cudaMemcpy(dIn, picture, matrixSize, cudaMemcpyHostToDevice);
 
-  dim3 gridSize{ (unsigned)ceil(600 / 32), (unsigned)ceil(800 / 32), 1 };
+  dim3 gridSize{ (unsigned)ceil(800 / 32), (unsigned)ceil(600 / 32), 1 };
   dim3 blockSize{ 32,32,1 };
   PictureMultKernal <<< gridSize, blockSize >>> (dIn, dOut, 800, 600);
 
