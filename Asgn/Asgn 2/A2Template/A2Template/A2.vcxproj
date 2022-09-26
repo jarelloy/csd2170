@@ -20,6 +20,10 @@
   <ItemGroup>
     <ClInclude Include="src\helper.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="cpu.txt" />
+    <Text Include="gpu.txt" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{73E3AA19-CB79-41ED-A7F1-58283EBD1939}</ProjectGuid>
     <RootNamespace>A2</RootNamespace>

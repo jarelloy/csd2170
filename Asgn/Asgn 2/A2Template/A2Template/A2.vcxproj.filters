@@ -15,4 +15,12 @@
       <UniqueIdentifier>{584d0f3e-f6ae-4386-8679-4f736905d440}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="cpu.txt">
+      <Filter>Resources</Filter>
+    </Text>
+    <Text Include="gpu.txt">
+      <Filter>Resources</Filter>
+    </Text>
+  </ItemGroup>
 </Project>
