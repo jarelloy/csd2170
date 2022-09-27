@@ -28,6 +28,12 @@ void matrixMultiply(FLOAT_TYPE* output, const FLOAT_TYPE* input1, const FLOAT_TY
 void matrixMultiplyGPU(FLOAT_TYPE* output, FLOAT_TYPE* input1, FLOAT_TYPE* input2,
   int numARows, int numBColumns, int numAColumns)
 {
+  //Transpose input1 matrix -- save space, store into output* and kernel output back to output*
+  convertRowColumn(output, input1, numARows, numBColumns);
+
+  FLOAT_TYPE* dInA{}, dInB{}, dOut{};
+
+
   ////@@ Initialize the grid and block dimensions here
 
   //dim3 dimGrid((numARows - 1) / TILE_WIDTH_M + 1, (numBColumns - 1) / TILE_WIDTH_N + 1);
