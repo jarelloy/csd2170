@@ -31,9 +31,7 @@ void matrixMultiplyCPU(FLOAT_TYPE* output, FLOAT_TYPE* input0, FLOAT_TYPE* input
       float sum{};
       for (int iter{}; iter < numAColumns; ++iter)
       {
-        float in1{ input0[y * numAColumns + x + iter] };
-        float in2{ input1[(y + iter) * numBColumns + x] };
-        sum += in1 * in2;
+        sum += input0[y * numAColumns + iter] * input1[iter * numBColumns + x];
       }
       output[y * numBColumns + x] = sum;
     }
