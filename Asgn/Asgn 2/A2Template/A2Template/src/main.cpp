@@ -39,16 +39,11 @@ void correctness_test(int nRun,int numARows, int numACols, int numBCols)
     //Matrix B
     float* matB = createData(numACols, numBCols);
 
-    ////Mat-vec test
-    //matA[0] = 5.0f; matA[1] = 0.0f; matA[2] = 0.0f; matA[3] = 10.0f;     matB[0] = 1.0f;
-    //matA[0] = 0.0f; matA[1] = 5.0f; matA[2] = 0.0f; matA[3] = 15.0f;     matB[0] = 2.0f;
-    //matA[0] = 0.0f; matA[1] = 0.0f; matA[2] = 5.0f; matA[3] = 20.0f;     matB[0] = 3.0f;
-    //matA[0] = 0.0f; matA[1] = 0.0f; matA[2] = 0.0f; matA[3] =  1.0f;     matB[0] = 1.0f;
-
-    //Dot prod test
-    matA[0] = 1.0f; matA[1] = 2.0f; matA[2] = 3.0f; matA[3] = 1.0f;     
-    matB[0] = 1.0f; matB[1] = 2.0f; matB[2] = 3.0f; matB[3] = 1.0f;
-    
+    //Mat-vec test
+    matA[0] =  5.0f; matA[1] =  0.0f; matA[2] =  0.0f; matA[3] =  10.0f;    matB[0] = 1.0f;
+    matA[4] =  0.0f; matA[5] =  5.0f; matA[6] =  0.0f; matA[7] =  15.0f;    matB[1] = 2.0f;
+    matA[8] =  0.0f; matA[9] =  0.0f; matA[10] = 5.0f; matA[11] = 20.0f;    matB[2] = 3.0f;
+    matA[12] = 0.0f; matA[13] = 0.0f; matA[14] = 0.0f; matA[15] =  1.0f;    matB[3] = 1.0f;
 
     //CPU code
     float* cpuOut{ new float[numARows * numBCols]{} };
@@ -114,12 +109,7 @@ void efficiency_test(int nRun, int numARows, int numACols, int numBCols)
 
 int main(int argc, char** argv)
 {
-	int numARows = 191;
-	int numACols = 19;
-	int numBCols = 241;
-	int numBRows = numACols;
-
-  correctness_test(1, 1, 4, 1); //Mat * vec simulation
+  correctness_test(1, 4, 4, 1); //Mat * vec simulation
   //correctness_test(1, 4, 4, 4); //Mat * mat simulation
 
 	//correctness_test(1, 101 - rand() % 10, 101 - rand() % 10, 101 - rand() % 10);

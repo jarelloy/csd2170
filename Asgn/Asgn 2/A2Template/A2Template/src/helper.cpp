@@ -22,16 +22,18 @@ FLOAT_TYPE* createData(int nRows, int nCols)
 }
 
 void matrixMultiplyCPU(FLOAT_TYPE* output, FLOAT_TYPE* input0, FLOAT_TYPE* input1,
-	int numARows, int numAColumns, int numBColumns)
+  int numARows, int numAColumns, int numBColumns)
 {
   for (int y{}; y < numARows; ++y)
   {
     for (int x{}; x < numBColumns; ++x)
     {
       float sum{};
-      for (int iter{}; iter < numARows; ++iter)
+      for (int iter{}; iter < numAColumns; ++iter)
       {
-        sum += input0[y * numAColumns + x + iter] * input1[(y + iter) * numBColumns + x];
+        float in1{ input0[y * numAColumns + x + iter] };
+        float in2{ input1[(y + iter) * numBColumns + x] };
+        sum += in1 * in2;
       }
       output[y * numBColumns + x] = sum;
     }
