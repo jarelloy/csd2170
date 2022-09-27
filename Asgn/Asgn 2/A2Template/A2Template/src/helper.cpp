@@ -40,5 +40,7 @@ void matrixMultiplyCPU(FLOAT_TYPE* output, FLOAT_TYPE* input0, FLOAT_TYPE* input
 
 void convertRowColumn(FLOAT_TYPE* dst, FLOAT_TYPE* src, int numRows, int numCols)
 {
-	//your code here
+  for (int y{}; y < numRows; ++y)
+    for (int x{}; x < numCols; ++x)
+      dst[x * numRows + y] = src[y * numRows + x];
 }
