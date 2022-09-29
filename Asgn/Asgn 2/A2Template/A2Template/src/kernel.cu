@@ -19,8 +19,14 @@ __global__
 void matrixMultiply(FLOAT_TYPE* output, const FLOAT_TYPE* input1, const FLOAT_TYPE* input2,
   const int m, const int n, const int k) 
 {
-  // Shared memory for tiling input N array
   __shared__ FLOAT_TYPE B_s[TILE_WIDTH_RATIO_K][TILE_WIDTH_N];
+  FLOAT_TYPE* in1Tile[TILE_WIDTH_N]{};
+
+  for (int i{}; i < (k - 1) / TILE_WIDTH_RATIO_K + 1; ++i)
+  {
+    //Load into shared memory
+
+  }
 
   //your code here
 }
