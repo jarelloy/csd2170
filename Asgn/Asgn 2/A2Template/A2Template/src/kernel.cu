@@ -19,13 +19,37 @@ __global__
 void matrixMultiply(FLOAT_TYPE* output, const FLOAT_TYPE* input1, const FLOAT_TYPE* input2,
   const int m, const int n, const int k) 
 {
-  __shared__ FLOAT_TYPE B_s[TILE_WIDTH_RATIO_K][TILE_WIDTH_N];
-  FLOAT_TYPE* in1Tile[TILE_WIDTH_N]{};
+  __shared__ FLOAT_TYPE shared[TILE_WIDTH_RATIO_K][TILE_WIDTH_N];
+  FLOAT_TYPE* partialOutput[TILE_WIDTH_N]{};
 
-  for (int i{}; i < (k - 1) / TILE_WIDTH_RATIO_K + 1; ++i)
+  
+  //int x = blockDim.x * blockIdx.x + threadIdx.x;
+  //int y = blockDim.y * blockIdx.y + threadIdx.y;
+  //int finalID = y * n + x;
+  //printf("Block ID(%d,%d)\n Thread ID(%d,%d)\n Element ID, element value: %d, %f\n", 
+  //  blockIdx.x, blockIdx.y, threadIdx.x, threadIdx.y, finalID, input2[finalID]);
+
+
+  for (int iter{}; iter < (k - 1) / TILE_WIDTH_RATIO_K + 1; ++iter)
   {
     //Load into shared memory
+    int x = blockDim.x * blockIdx.x + threadIdx.x;
+    int y = blockDim.y * blockIdx.y + threadIdx.y;
+    int finalID = y * n + x;
 
+    int smX = finalID % TILE_WIDTH_N;
+    int smY = (finalID / TILE_WIDTH_N) % TILE_WIDTH_RATIO_K;
+
+    int currentBlock = blockIdx.y * gridDim.x + blockIdx.x;
+    int tgtX = smX + blockIdx.y * TILE_WIDTH_N;
+    int tgtY = smY + iter * TILE_WIDTH_RATIO_K;
+
+    shared[smY][smX] = input2[tgtY * n + tgtX];
+
+    //printf("Block ID(%d,%d)\n Thread ID(%d,%d)\n Element ID, element value: %d, %f\n Iter : %d\n SM[0][0] = %f\t SM[0][1] = %f\n SM[1][0] = %f\t SM[1][1] = %f\n SM[2][0] = %f\t SM[2][1] = %f\n SM[3][0] = %f\t SM[3][1] = %f\n",
+    //  blockIdx.x, blockIdx.y, threadIdx.x, threadIdx.y, finalID, input2[finalID], iter, shared[0][0], shared[0][1], shared[1][0], shared[1][1], shared[2][0], shared[2][1], shared[3][0], shared[3][1]);
+
+    //Load into register
   }
 
   //your code here
@@ -38,9 +62,9 @@ void matrixMultiplyGPU(FLOAT_TYPE* output, FLOAT_TYPE* input1, FLOAT_TYPE* input
   convertRowColumn(output, input1, numARows, numBColumns);
 
   FLOAT_TYPE* dInA{}, *dInB{}, *dOut{};
-  size_t matAsize{ sizeof(float) * numARows * numAColumns };
-  size_t matBsize{ sizeof(float) * numAColumns * numBColumns };
-  size_t matOutSize{ sizeof(float) * numARows * numBColumns };
+  size_t matAsize{ sizeof(FLOAT_TYPE) * numARows * numAColumns };
+  size_t matBsize{ sizeof(FLOAT_TYPE) * numAColumns * numBColumns };
+  size_t matOutSize{ sizeof(FLOAT_TYPE) * numARows * numBColumns };
 
   checkCudaErrors(cudaMalloc((void**)&dInA, matAsize));
   getLastCudaError("Error cuda malloc!");

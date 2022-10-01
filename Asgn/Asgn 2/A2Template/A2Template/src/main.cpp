@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <fstream>
 #include <iomanip>
+#include <iostream>
 /*
 * This sample implements Matrix Multiplication
 */
@@ -27,7 +28,8 @@
 #include <stdint.h>
 
 #define epsilon 1.0e-3
-
+#define DEBUG_INPUT
+#define DEBUG_OUTPUT
 
 void correctness_test(int nRun,int numARows, int numACols, int numBCols)
 {
@@ -40,12 +42,11 @@ void correctness_test(int nRun,int numARows, int numACols, int numBCols)
     float* matB = createData(numACols, numBCols);
 
 
-#define DEBUG_INPUT
+
 #ifdef DEBUG_INPUT
     for (int i{}; i < numARows * numACols; ++i) matA[i] = (float)i;
     for (int i{}; i < numBCols * numACols; ++i) matB[i] = (float)i;
 #endif // DEBUG_INPUT
-
 
     //CPU code
     float* cpuOut{ new float[numARows * numBCols]{} };
@@ -56,7 +57,7 @@ void correctness_test(int nRun,int numARows, int numACols, int numBCols)
     matrixMultiplyGPU(gpuOut, matA, matB, numARows, numBCols, numACols);
 
 
-#define DEBUG_OUTPUT
+
 #ifdef  DEBUG_OUTPUT
     //Output CPU + GPU
     std::ofstream cpuOFS{ "cpu.txt" };
@@ -113,7 +114,8 @@ int main(int argc, char** argv)
 {
   //correctness_test(1, 1, 4, 1); //Dot prod simulation
   //correctness_test(1, 4, 4, 1); //Mat * vec simulation
-  correctness_test(1, 4, 4, 4); //Mat * mat simulation
+  //correctness_test(1, 8, 4, 8); //Mat * mat simulation
+  correctness_test(1, 16, 16, 16); //Mat * mat simulation
 
 	//correctness_test(1, 101 - rand() % 10, 101 - rand() % 10, 101 - rand() % 10);
 	//correctness_test(1, 200 + rand() % 100, 200 + rand() % 100, 200 + rand() % 100);

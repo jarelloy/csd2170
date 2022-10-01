@@ -57,7 +57,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;WIN64;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Users\derwi\Documents\_DIGIPEN ALL\_Digipen Y3S1\csd2170 %28massive%29\csd2170\Asgn\Vendor\cuda11.7;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\Documents\_Digipen\_Digipen Y3S1\csd2170 %28massive%29\csd2170\Asgn\Vendor\cuda11.7;C:\Users\derwi\Documents\_DIGIPEN ALL\_Digipen Y3S1\csd2170 %28massive%29\csd2170\Asgn\Vendor\cuda11.7;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
