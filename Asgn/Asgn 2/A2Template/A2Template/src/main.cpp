@@ -112,10 +112,11 @@ void efficiency_test(int nRun, int numARows, int numACols, int numBCols)
 
 int main(int argc, char** argv)
 {
-  //correctness_test(1, 4, 4, 4); //Mat * mat simulation
+  correctness_test(1, 3, 3, 3); //Mat * mat simulation
+  //correctness_test(1, 8, 4, 8); //Mat * mat simulation
   //correctness_test(1, 8, 8, 8); //Mat * mat simulation
   //correctness_test(1, 16, 16, 16); //Mat * mat simulation
-  correctness_test(1, 256,256,256); //Mat * mat simulation
+  //correctness_test(1, 256,256,256); //Mat * mat simulation
 
 	//correctness_test(1, 101 - rand() % 10, 101 - rand() % 10, 101 - rand() % 10);
 	//correctness_test(1, 200 + rand() % 100, 200 + rand() % 100, 200 + rand() % 100);

@@ -14,6 +14,7 @@
 #include <helper_cuda.h>
 #include "helper.h"
 
+//P and M column-major, N row-major
 __global__ 
 void matrixMultiply(FLOAT_TYPE* output, const FLOAT_TYPE* input1, const FLOAT_TYPE* input2,
   const int m, const int n, const int k) 
@@ -31,11 +32,16 @@ void matrixMultiply(FLOAT_TYPE* output, const FLOAT_TYPE* input1, const FLOAT_TY
     int smX = finalID % TILE_WIDTH_N;
     int smY = (finalID / TILE_WIDTH_N) % TILE_WIDTH_RATIO_K;
 
+    //int currentBlock = blockIdx.y * gridDim.x + blockIdx.x;
     int tgtX = smX + blockIdx.y * TILE_WIDTH_N;
     int tgtY = smY + iter * TILE_WIDTH_RATIO_K;
 
-    shared[smY][smX] = input2[tgtY * n + tgtX];
+    if (tgtX < n && tgtY < k)
+      shared[smY][smX] = input2[tgtY * n + tgtX];
+    else
+      shared[smY][smX] = 0.0f;
     __syncthreads();
+
 
     //Perform multiplication
     for (int perm{}; perm < TILE_WIDTH_N; ++perm)   //row permutation
@@ -43,16 +49,51 @@ void matrixMultiply(FLOAT_TYPE* output, const FLOAT_TYPE* input1, const FLOAT_TY
       //Load into register
       int regY = iter * TILE_WIDTH_RATIO_K + perm * TILE_WIDTH_N;
       int regX = finalID % TILE_WIDTH_M + blockIdx.x * TILE_WIDTH_M;
-      //__syncthreads();
 
       //Multiply with shared memory cols
       for (int mulCt{}; mulCt < TILE_WIDTH_N; ++mulCt)  //column permutation
       {
         //if (mulCt != 0) continue;
         partialOutput[mulCt] += input1[regY * n + regX] * shared[regY % TILE_WIDTH_RATIO_K][mulCt];
-        //__syncthreads();
         partialOutput[mulCt] += input1[(regY + 1) * n + regX] * shared[(regY + 1) % TILE_WIDTH_RATIO_K][mulCt];
-        //__syncthreads()
+
+        //if (partialOutput[0] == 142720.0f || partialOutput[1] == 142720.0f)
+        //  printf("Found 142720.0f at Block:(%d,%d), thread(%d,%d)\n", blockIdx.x, blockIdx.y, threadIdx.x, threadIdx.y);
+
+        //if (blockIdx.x == 0 && blockIdx.y == 3 && threadIdx.x == 7)
+        //if (iter == 3 && perm == 1 && mulCt == 1)
+        //{
+          printf(
+            "Block ID(%d,%d)\n" 
+            " Thread ID(%d,%d)\n"
+            " Element ID, element value: %d, %f\n"
+            //" Iter : %d\tPerm : %d\tMulCt : %d\n "
+            //" SM[0][0] = %f\t SM[0][1] = %f\n "
+            //" SM[1][0] = %f\t SM[1][1] = %f\n "
+            //" SM[2][0] = %f\t SM[2][1] = %f\n "
+            //" SM[3][0] = %f\t SM[3][1] = %f\n "
+            " Register = %f\tShared = %f\n"
+            /*" \tPartial output[0]: before, after = %f, %f\n "*/ " \tPartial output[0]: %f\n"
+            //" \t\tMultiplied '%f' with '%f'\n"
+            " Register = %f\tShared = %f\n"
+            /*" \tPartial output[1]: before, after = %f, %f\n"*/ " \tPartial output[1]: %f\n",
+            //" \t\tMultiplied '%f' with '%f'\n",
+            blockIdx.x, blockIdx.y, 
+            threadIdx.x, threadIdx.y, 
+            finalID, input2[finalID], 
+            //iter, perm, mulCt, 
+            //shared[0][0], shared[0][1], shared[1][0], shared[1][1], shared[2][0], shared[2][1], shared[3][0], shared[3][1], 
+            input1[regY * n + regX], shared[regY % TILE_WIDTH_RATIO_K][mulCt],                                                          //Register shared
+            //partialOutput[0], partialOutput[mulCt] + input1[regY * n + regX] * shared[regY % TILE_WIDTH_RATIO_K][mulCt],                //Partial output[0]: before, after 
+            partialOutput[0],
+            //input1[regY * n + regX], shared[regY % TILE_WIDTH_RATIO_K][mulCt],                                                          //Multiply X with Y
+
+            input1[(regY + 1) * n + regX], shared[(regY + 1) % TILE_WIDTH_RATIO_K][mulCt],                                              //Register shared pt 2
+            //partialOutput[1] , partialOutput[mulCt] + input1[(regY + 1) * n + regX] * shared[(regY + 1) % TILE_WIDTH_RATIO_K][mulCt],   //Partial output[1]: before, after
+            partialOutput[1]
+            //input1[(regY + 1), n + regX] * shared[(regY + 1) % TILE_WIDTH_RATIO_K][mulCt]                                               //Multiply X with Y pt 2
+          );                                             
+        //}
       }
     }
   }
