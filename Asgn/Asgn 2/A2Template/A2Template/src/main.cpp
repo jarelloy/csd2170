@@ -13,9 +13,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
 /*
 * This sample implements Matrix Multiplication
 */
@@ -28,111 +25,180 @@
 #include <stdint.h>
 
 #define epsilon 1.0e-3
-#define DEBUG_INPUT
-#define DEBUG_OUTPUT
 
-void correctness_test(int nRun,int numARows, int numACols, int numBCols)
+void printMtx(FLOAT_TYPE* mtx, int row, int col)
 {
-	for (int i=0; i<nRun; i++) 
+  std::cout << "\n";
+  for (int i{ 0 }; i < row; ++i)
   {
-    //Matrix A
-    float* matA = createData(numARows, numACols);
-
-    //Matrix B
-    float* matB = createData(numACols, numBCols);
-
-
-
-#ifdef DEBUG_INPUT
-    for (int i{}; i < numARows * numACols; ++i) matA[i] = (float)i;
-    for (int i{}; i < numBCols * numACols; ++i) matB[i] = (float)i;
-#endif // DEBUG_INPUT
-
-    //CPU code
-    float* cpuOut{ new float[numARows * numBCols]{} };
-    matrixMultiplyCPU(cpuOut, matA, matB, numARows, numACols, numBCols);
-
-    //GPU code
-    float* gpuOut{ new float[numARows * numBCols]{} };
-    matrixMultiplyGPU(gpuOut, matA, matB, numARows, numBCols, numACols);
-
-
-
-#ifdef  DEBUG_OUTPUT
-    //Output CPU + GPU
-    std::ofstream cpuOFS{ "cpu.txt" };
-    std::ofstream gpuOFS{ "gpu.txt" };
-
-    for (int y{}; y < numBCols; ++y) 
+    for (int j{ 0 }; j < col; ++j)
     {
-      for (int x{}; x < numARows; ++x)
-      {
-        int i{ y * numARows + x };
-
-        cpuOFS.width(15);
-        cpuOFS << std::fixed << std::setprecision(2) << cpuOut[i] << ' ';
-        
-        gpuOFS.width(15);
-        gpuOFS << std::fixed << std::setprecision(2) << gpuOut[i] << ' ';
-      }
-      cpuOFS << '\n';
-      gpuOFS << '\n';
-    }
-    gpuOFS.close();
-    cpuOFS.close();
-#endif // DEBUG_OUTPUT
-
-
-    //Check to see if match
-    for (int i{}; i < numARows * numBCols; ++i)
-    {
-      if (std::abs(cpuOut[i] - gpuOut[i]) > epsilon)
-      {
-        std::cout << "Failed at -- ARow, ACol, BCol -- " << numARows << ", " << numACols << ", " << numBCols << '\n';
-        assert(std::abs(cpuOut[i] - gpuOut[i]) <= epsilon);
-      }
+      std::cout << mtx[i * col + j] << "\t";
     }
 
-    delete[] cpuOut;
-    delete[] gpuOut;
-	}
+    std::cout << "\n";
+  }
 }
 
-void efficiency_test(int nRun, int numARows, int numACols, int numBCols)
+void correctness_test(int nRun,
+  int numARows,
+  int numACols,
+  int numBCols)
 {
-	for (int i = 0; i < nRun; i++) 
-  {
-		//call createData() to generate random matrix as inputs
-		//matrix multiply cpu results
-		//measure the time for matrix multiplication cpu version
-		//add to total latency for cpu version
-		//matrix multiply gpu results
-		//measure the time for matrix multiplication gpu version 
-		//add to total latency for gpu version
-	}
-	//average total latency for cpu version over nRun
-	//average total latency for gpu version over nRun
+  for (int i = 0; i < nRun; i++) {
+    FLOAT_TYPE* h_A = createData(numARows, numACols);
+    FLOAT_TYPE* h_B{ createData(numACols, numBCols) };
+    FLOAT_TYPE* h_C{ (FLOAT_TYPE*)malloc(sizeof(FLOAT_TYPE) * numARows * numBCols) }; //CPU mtx
+    FLOAT_TYPE* h_C_2{ (FLOAT_TYPE*)malloc(sizeof(FLOAT_TYPE) * numARows * numBCols) };//GPU mtx
+    FLOAT_TYPE* h_A_conv{ (FLOAT_TYPE*)malloc(sizeof(FLOAT_TYPE) * numARows * numACols) };
+    FLOAT_TYPE* h_C_conv{ (FLOAT_TYPE*)malloc(sizeof(FLOAT_TYPE) * numARows * numBCols) }; //GPU mtx converted 
+
+    matrixMultiplyCPU(h_C, h_A, h_B, numARows, numACols, numBCols);
+
+    FLOAT_TYPE* d_A, * d_B, * d_C;
+
+    convertRowColumn(h_A_conv, h_A, numARows, numACols);
+    checkCudaErrors(cudaMalloc((void**)&d_A, sizeof(FLOAT_TYPE) * numARows * numACols));
+    checkCudaErrors(cudaMalloc((void**)&d_B, sizeof(FLOAT_TYPE) * numACols * numBCols));
+    checkCudaErrors(cudaMalloc((void**)&d_C, sizeof(FLOAT_TYPE) * numARows * numBCols));
+
+    checkCudaErrors(cudaMemcpy(d_A, h_A_conv, sizeof(FLOAT_TYPE) * numARows * numACols, cudaMemcpyHostToDevice));
+    checkCudaErrors(cudaMemcpy(d_B, h_B, sizeof(FLOAT_TYPE) * numACols * numBCols, cudaMemcpyHostToDevice));
+    matrixMultiplyGPU(d_C, d_A, d_B, numARows, numBCols, numACols);
+    checkCudaErrors(cudaMemcpy(h_C_2, d_C, sizeof(FLOAT_TYPE) * numARows * numBCols, cudaMemcpyDeviceToHost));
+    convertRowColumn(h_C_conv, h_C_2, numBCols, numARows);
+
+    checkCudaErrors(cudaFree(d_A));
+    checkCudaErrors(cudaFree(d_B));
+    checkCudaErrors(cudaFree(d_C));
+
+    //printMtx(h_A, numARows, numACols);
+    //printMtx(h_B, numACols, numBCols);
+
+    //printMtx(h_C, numACols, numBCols);
+    //printMtx(h_C_conv, numARows, numBCols);
+
+    for (int j{ 0 }; j < numARows * numBCols; ++j)
+    {
+      if (abs(h_C_conv[j] - h_C[j]) > epsilon)
+      {
+        std::cout << "no matching\n";
+        break;
+      }
+    }
+
+    free(h_C_conv);
+    free(h_A_conv);
+    free(h_C_2);
+    free(h_C);
+    free(h_B);
+    free(h_A);
+  }
+}
+
+void efficiency_test(int nRun,
+  int numARows,
+  int numACols,
+  int numBCols)
+{
+  StopWatchInterface* hTimer = NULL;
+  sdkCreateTimer(&hTimer);
+
+  float cpuAvg{ 0.f };
+  float gpuAvg{ 0.f };
+  for (int i = 0; i < nRun; i++) {
+    FLOAT_TYPE* h_A = createData(numARows, numACols);
+    FLOAT_TYPE* h_B{ createData(numACols, numBCols) };
+    FLOAT_TYPE* h_C{ (FLOAT_TYPE*)malloc(sizeof(FLOAT_TYPE) * numARows * numBCols) }; //CPU mtx
+    FLOAT_TYPE* h_C_2{ (FLOAT_TYPE*)malloc(sizeof(FLOAT_TYPE) * numARows * numBCols) };//GPU mtx
+    FLOAT_TYPE* h_A_conv{ (FLOAT_TYPE*)malloc(sizeof(FLOAT_TYPE) * numARows * numACols) };
+    FLOAT_TYPE* h_C_conv{ (FLOAT_TYPE*)malloc(sizeof(FLOAT_TYPE) * numARows * numBCols) }; //GPU mtx converted 
+
+    FLOAT_TYPE* d_A, * d_B, * d_C;
+
+    convertRowColumn(h_A_conv, h_A, numARows, numACols);
+    checkCudaErrors(cudaMalloc((void**)&d_A, sizeof(FLOAT_TYPE) * numARows * numACols));
+    checkCudaErrors(cudaMalloc((void**)&d_B, sizeof(FLOAT_TYPE) * numACols * numBCols));
+    checkCudaErrors(cudaMalloc((void**)&d_C, sizeof(FLOAT_TYPE) * numARows * numBCols));
+    checkCudaErrors(cudaMemcpy(d_A, h_A_conv, sizeof(FLOAT_TYPE) * numARows * numACols, cudaMemcpyHostToDevice));
+    checkCudaErrors(cudaMemcpy(d_B, h_B, sizeof(FLOAT_TYPE) * numACols * numBCols, cudaMemcpyHostToDevice));
+    checkCudaErrors(cudaMemcpy(d_A, h_A_conv, sizeof(FLOAT_TYPE) * numARows * numACols, cudaMemcpyHostToDevice));
+    checkCudaErrors(cudaMemcpy(d_B, h_B, sizeof(FLOAT_TYPE) * numACols * numBCols, cudaMemcpyHostToDevice));
+
+    sdkResetTimer(&hTimer);
+    sdkStartTimer(&hTimer);
+    matrixMultiplyCPU(h_C, h_A, h_B, numARows, numACols, numBCols);
+    sdkStopTimer(&hTimer);
+
+    float dAvgSecs = 1.0e-3 * (float)sdkGetTimerValue(&hTimer);
+    cpuAvg += dAvgSecs;
+
+    sdkResetTimer(&hTimer);
+    sdkStartTimer(&hTimer);
+    matrixMultiplyGPU(d_C, d_A, d_B, numARows, numBCols, numACols);
+    sdkStopTimer(&hTimer);
+
+    dAvgSecs = 1.0e-3 * (float)sdkGetTimerValue(&hTimer);
+    gpuAvg += dAvgSecs;
+    checkCudaErrors(cudaMemcpy(h_C_2, d_C, sizeof(FLOAT_TYPE) * numARows * numBCols, cudaMemcpyDeviceToHost));
+    convertRowColumn(h_C_conv, h_C_2, numBCols, numARows);
+
+    checkCudaErrors(cudaFree(d_A));
+    checkCudaErrors(cudaFree(d_B));
+    checkCudaErrors(cudaFree(d_C));
+
+    for (int j{ 0 }; j < numARows * numBCols; ++j)
+    {
+      if (abs(h_C_conv[j] - h_C[j]) > epsilon)
+      {
+        std::cout << "no matching\n";
+        break;
+      }
+    }
+
+    free(h_C_conv);
+    free(h_A_conv);
+    free(h_C_2);
+    free(h_C);
+    free(h_B);
+    free(h_A);
+
+    //call createData() to generate random matrix as inputs
+    //matrix multiply cpu results
+    //measure the time for matrix multiplication cpu version
+    //add to total latency for cpu version
+    //matrix multiply gpu results
+    //measure the time for matrix multiplication gpu version 
+    //add to total latency for gpu version
+  }
+
+  printf("CPU average time taken: %fs\n", cpuAvg / nRun);
+  printf("GPU average time taken: %fs\n", gpuAvg / nRun);
+  sdkDeleteTimer(&hTimer);
+  //average total latency for cpu version over nRun
+  //average total latency for gpu version over nRun
 }
 
 int main(int argc, char** argv)
 {
-  //correctness_test(1, 3, 3, 3); //Mat * mat simulation
-  //correctness_test(1, 8, 4, 8); //Mat * mat simulation
-  //correctness_test(1, 8, 8, 8); //Mat * mat simulation
-  correctness_test(1, 12,34,56); //Mat * mat simulation
-  //correctness_test(1, 16, 16, 16); //Mat * mat simulation
-  //correctness_test(1, 200,200,200); //Mat * mat simulation
-  //correctness_test(1, 256,256,256); //Mat * mat simulation
+#if defined(DEBUG) || defined(_DEBUG)
+  _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
+  //int numARows = 191;
+  //int numACols = 19;
+  //int numBCols = 241;
+  //int numBRows = numACols;
 
-	//correctness_test(1, 101 - rand() % 10, 101 - rand() % 10, 101 - rand() % 10);
-	//correctness_test(1, 200 + rand() % 100, 200 + rand() % 100, 200 + rand() % 100);
-	//correctness_test(1, 500 + rand() % 500, 500 + rand() % 500, 500 + rand() % 500);
-	//correctness_test(1, 2000, 2000, 2000);
+  correctness_test(200, 2, 2, 2);
+  correctness_test(10, 101 - rand() % 10, 101 - rand() % 10, 101 - rand() % 10);
+  correctness_test(10, 200 + rand() % 100, 200 + rand() % 100, 200 + rand() % 100);
+  correctness_test(10, 500 + rand() % 500, 500 + rand() % 500, 500 + rand() % 500);
+  //correctness_test(1, 2000, 2000, 2000);
+  
+  //efficiency_test(10, 100, 100, 100);
+  //efficiency_test(10, 500, 500, 500);
+  //efficiency_test(10, 1000, 1000, 1000);
 
-	//efficiency_test(10, 100, 100, 100);
-	//efficiency_test(10, 500, 500, 500);
-	//efficiency_test(10, 1000, 1000, 1000);
-
-	return 0;
+  return 0;
 }
 

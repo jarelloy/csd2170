@@ -12,39 +12,51 @@
 #include "helper.h"
 FLOAT_TYPE* createData(int nRows, int nCols)
 {
-	FLOAT_TYPE* data = (FLOAT_TYPE*)malloc(sizeof(FLOAT_TYPE) * nCols * nRows);
-	int i;
-	for (i = 0; i < nCols * nRows; i++) 
-  {
-		data[i] = ((FLOAT_TYPE)(rand() % 10) - 5) / 5.0f;
-	}
-	return data;
+  FLOAT_TYPE* data = (FLOAT_TYPE*)malloc(sizeof(FLOAT_TYPE) * nCols * nRows);
+  int i;
+  for (i = 0; i < nCols * nRows; i++) {
+    data[i] = ((FLOAT_TYPE)(rand() % 10) - 5) / 5.0f;
+  }
+  return data;
 }
+
 
 void matrixMultiplyCPU(FLOAT_TYPE* output, FLOAT_TYPE* input0, FLOAT_TYPE* input1,
   int numARows, int numAColumns, int numBColumns)
-{
-  for (int y{}; y < numARows; ++y)
+{ //  m             k                n
+
+  for (int i{ 0 }; i < numARows; ++i)
   {
-    for (int x{}; x < numBColumns; ++x)
+    for (int j{ 0 }; j < numBColumns; ++j)
     {
-      float sum{};
-      for (int iter{}; iter < numAColumns; ++iter)
+      FLOAT_TYPE tmpRes{ static_cast<FLOAT_TYPE>(0) };
+      for (int k{ 0 }; k < numAColumns; ++k)
       {
-        sum += input0[y * numAColumns + iter] * input1[iter * numBColumns + x];
+        tmpRes += input0[numAColumns * i + k] * input1[numBColumns * k + j];
       }
-      output[y * numBColumns + x] = sum;
+      output[numBColumns * i + j] = tmpRes;
     }
   }
+
+  // assumes input 1 is converted to column major since no need to upload
+  //for (int i{ 0 }; i < numBColumns; ++i)
+  //{
+  //  for (int j{ 0 }; j < numAColumns; ++j)
+  //  {
+  //    FLOAT_TYPE tmpRes{ static_cast<FLOAT_TYPE>(0) };
+  //    for (int k{ 0 }; k < numARows; ++k)
+  //    {
+  //      tmpRes += input0[numARows * i + k] * input1[numAColumns * j + k];
+  //    }
+  //    output[numAColumns * i + j] = tmpRes;
+  //  }
+  //}
 }
 
 void convertRowColumn(FLOAT_TYPE* dst, FLOAT_TYPE* src, int numRows, int numCols)
-{
-  for (int i = 0; i < numRows; ++i)
-  {
-    for (int j = 0; j < numCols; ++j)
-    {
-      dst[j * numRows + i] = src[i * numCols + j];
-    }
+{ // is actually transpose, so to get it back flip rows and cols.
+  for (int i{ 0 }, t{ numRows * numCols }; i < t; ++i)
+  { // release single div instruction stores / in EAX and % in EDX registers
+    dst[i] = src[numCols * (i % numRows) + (i / numRows)];
   }
 }
