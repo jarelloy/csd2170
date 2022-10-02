@@ -28,6 +28,7 @@ void matrixMultiply(FLOAT_TYPE* output, const FLOAT_TYPE* input1, const FLOAT_TY
     int x = blockDim.x * blockIdx.x + threadIdx.x;
     int y = blockDim.y * blockIdx.y + threadIdx.y;
     int finalID = y * n + x;
+    int globalThreadId = (blockIdx.y * gridDim.x + blockIdx.x) * blockDim.x + threadIdx.x;
 
     int smX = finalID % TILE_WIDTH_N;
     int smY = (finalID / TILE_WIDTH_N) % TILE_WIDTH_RATIO_K;
@@ -36,73 +37,82 @@ void matrixMultiply(FLOAT_TYPE* output, const FLOAT_TYPE* input1, const FLOAT_TY
     int tgtX = smX + blockIdx.y * TILE_WIDTH_N;
     int tgtY = smY + iter * TILE_WIDTH_RATIO_K;
 
-    if (tgtX < n && tgtY < k)
-      shared[smY][smX] = input2[tgtY * n + tgtX];
-    else
-      shared[smY][smX] = 0.0f;
+    shared[smY][smX] = (tgtX < n && tgtY < k) ? input2[tgtY * n + tgtX] : 0.0f;
     __syncthreads();
-
 
     //Perform multiplication
     for (int perm{}; perm < TILE_WIDTH_N; ++perm)   //row permutation
     {
       //Load into register
       int regY = iter * TILE_WIDTH_RATIO_K + perm * TILE_WIDTH_N;
-      int regX = finalID % TILE_WIDTH_M + blockIdx.x * TILE_WIDTH_M;
+      int regX = globalThreadId % TILE_WIDTH_M + blockIdx.x * TILE_WIDTH_M;
 
       //Multiply with shared memory cols
       for (int mulCt{}; mulCt < TILE_WIDTH_N; ++mulCt)  //column permutation
       {
-        //if (mulCt != 0) continue;
-        partialOutput[mulCt] += input1[regY * n + regX] * shared[regY % TILE_WIDTH_RATIO_K][mulCt];
-        partialOutput[mulCt] += input1[(regY + 1) * n + regX] * shared[(regY + 1) % TILE_WIDTH_RATIO_K][mulCt];
+        FLOAT_TYPE val = 0.0f;
+        if (regY < k && regX < m)
+        {
+          val = input1[regY * m + regX];
+          partialOutput[mulCt] += input1[regY * m + regX] * shared[regY % TILE_WIDTH_RATIO_K][mulCt];
+        }
+        if (regY + 1 < k && regX < m)
+        {
+          partialOutput[mulCt] += input1[(regY + 1) * m + regX] * shared[(regY + 1) % TILE_WIDTH_RATIO_K][mulCt];
+        }
 
-        //if (partialOutput[0] == 142720.0f || partialOutput[1] == 142720.0f)
-        //  printf("Found 142720.0f at Block:(%d,%d), thread(%d,%d)\n", blockIdx.x, blockIdx.y, threadIdx.x, threadIdx.y);
-
-        //if (blockIdx.x == 0 && blockIdx.y == 3 && threadIdx.x == 7)
-        //if (iter == 3 && perm == 1 && mulCt == 1)
+        //if (blockIdx.x == 0 && blockIdx.y == 0 && threadIdx.x == 0)
+        //if (blockIdx.y == 0)
         //{
-          printf(
-            "Block ID(%d,%d)\n" 
-            " Thread ID(%d,%d)\n"
-            " Element ID, element value: %d, %f\n"
-            //" Iter : %d\tPerm : %d\tMulCt : %d\n "
-            //" SM[0][0] = %f\t SM[0][1] = %f\n "
-            //" SM[1][0] = %f\t SM[1][1] = %f\n "
-            //" SM[2][0] = %f\t SM[2][1] = %f\n "
-            //" SM[3][0] = %f\t SM[3][1] = %f\n "
-            " Register = %f\tShared = %f\n"
-            /*" \tPartial output[0]: before, after = %f, %f\n "*/ " \tPartial output[0]: %f\n"
-            //" \t\tMultiplied '%f' with '%f'\n"
-            " Register = %f\tShared = %f\n"
-            /*" \tPartial output[1]: before, after = %f, %f\n"*/ " \tPartial output[1]: %f\n",
-            //" \t\tMultiplied '%f' with '%f'\n",
-            blockIdx.x, blockIdx.y, 
-            threadIdx.x, threadIdx.y, 
-            finalID, input2[finalID], 
-            //iter, perm, mulCt, 
-            //shared[0][0], shared[0][1], shared[1][0], shared[1][1], shared[2][0], shared[2][1], shared[3][0], shared[3][1], 
-            input1[regY * n + regX], shared[regY % TILE_WIDTH_RATIO_K][mulCt],                                                          //Register shared
-            //partialOutput[0], partialOutput[mulCt] + input1[regY * n + regX] * shared[regY % TILE_WIDTH_RATIO_K][mulCt],                //Partial output[0]: before, after 
-            partialOutput[0],
-            //input1[regY * n + regX], shared[regY % TILE_WIDTH_RATIO_K][mulCt],                                                          //Multiply X with Y
-
-            input1[(regY + 1) * n + regX], shared[(regY + 1) % TILE_WIDTH_RATIO_K][mulCt],                                              //Register shared pt 2
-            //partialOutput[1] , partialOutput[mulCt] + input1[(regY + 1) * n + regX] * shared[(regY + 1) % TILE_WIDTH_RATIO_K][mulCt],   //Partial output[1]: before, after
-            partialOutput[1]
-            //input1[(regY + 1), n + regX] * shared[(regY + 1) % TILE_WIDTH_RATIO_K][mulCt]                                               //Multiply X with Y pt 2
-          );                                             
+          //printf(
+          //  "Block ID(%d,%d)\n" 
+          //  " M, N, K: %d, %d, %d\n"
+          //  " Thread ID(%d,%d)\n"
+          //  " Element ID, global thread ID: %d, %d\n"
+          //  " Iter : %d\tPerm : %d\tMulCt : %d\n"
+          //  //" SM[0][0] = %f\t SM[0][1] = %f\n "
+          //  //" SM[1][0] = %f\t SM[1][1] = %f\n "
+          //  //" SM[2][0] = %f\t SM[2][1] = %f\n "
+          //  //" SM[3][0] = %f\t SM[3][1] = %f\n "
+          //  "  Register index(X,Y) = %d,%d\n"
+          //  "  Register = %f\tShared = %f\n"
+          //  /*" \tPartial output[0]: before, after = %f, %f\n "*/ " \tPartial output: %f\n",
+          //  //" \t\tMultiplied '%f' with '%f'\n"
+          //  //"  Register = %f\tShared = %f\n"
+          //  ///*" \tPartial output[1]: before, after = %f, %f\n"*/ " \tPartial output: %f\n",
+          //  //" \t\tMultiplied '%f' with '%f'\n",
+          //  blockIdx.x, blockIdx.y, 
+          //  m,n,k,
+          //  threadIdx.x, threadIdx.y, 
+          //  finalID, globalThreadId,
+          //  iter, perm, mulCt,
+          //  //shared[0][0], shared[0][1], shared[1][0], shared[1][1], shared[2][0], shared[2][1], shared[3][0], shared[3][1], 
+          //  regX, regY,
+          //  val, shared[regY % TILE_WIDTH_RATIO_K][mulCt],                                                          //Register shared
+          //  //partialOutput[0], partialOutput[mulCt] + input1[regY * n + regX] * shared[regY % TILE_WIDTH_RATIO_K][mulCt],                //Partial output[0]: before, after 
+          //  partialOutput[0]
+          //  //input1[regY * n + regX], shared[regY % TILE_WIDTH_RATIO_K][mulCt],                                                          //Multiply X with Y
+          //  //(regY + 1 < k && regX < m) ? input1[(regY + 1) * k + regX] : 0.0f, shared[(regY + 1) % TILE_WIDTH_RATIO_K][mulCt],                                              //Register shared pt 2
+          //  //partialOutput[1] , partialOutput[mulCt] + input1[(regY + 1) * n + regX] * shared[(regY + 1) % TILE_WIDTH_RATIO_K][mulCt],   //Partial output[1]: before, after
+          //  //partialOutput[mulCt]
+          //  //input1[(regY + 1), n + regX] * shared[(regY + 1) % TILE_WIDTH_RATIO_K][mulCt]                                               //Multiply X with Y pt 2
+          //);                                             
         //}
       }
     }
   }
 
   //store into output
-  int outY = threadIdx.x % TILE_WIDTH_M + TILE_WIDTH_M * blockIdx.x;
-  int outX = blockIdx.y * TILE_WIDTH_N;
-  output[outY * n + outX] = partialOutput[0];
-  output[outY * n + outX+1] = partialOutput[1];
+  for (int i{}; i < TILE_WIDTH_N; ++i)
+  {
+    int outY = blockIdx.y * TILE_WIDTH_N + i;
+    int outX = threadIdx.x + TILE_WIDTH_M * blockIdx.x;
+
+    if (outX < m && outY < n)
+      output[outY * n + outX] = partialOutput[i];
+  }
+
+
 }
 
 void matrixMultiplyGPU(FLOAT_TYPE* output, FLOAT_TYPE* input1, FLOAT_TYPE* input2,
@@ -139,11 +149,22 @@ void matrixMultiplyGPU(FLOAT_TYPE* output, FLOAT_TYPE* input1, FLOAT_TYPE* input
   getLastCudaError("matrixMultiply failed\n");
   cudaDeviceSynchronize();
 
-  checkCudaErrors(cudaMemcpy(output, dOut, matOutSize, cudaMemcpyDeviceToHost));
+  
+  FLOAT_TYPE* outTranspose{ new FLOAT_TYPE[numARows * numBColumns]{} };
+
+  checkCudaErrors(cudaMemcpy(outTranspose, dOut, matOutSize, cudaMemcpyDeviceToHost));
   getLastCudaError("Error cuda memcpy D2H");
+
+  convertRowColumn(output, outTranspose, numARows, numAColumns);
+
+  //output = outTranspose;
+  //FLOAT_TYPE* tmp = outTranspose;
+  //outTranspose = output;
+  //output = tmp;
 
   cudaFree(dInA);
   cudaFree(dInB);
   cudaFree(dOut);
-  delete aTranspose;
+  //delete[] aTranspose;
+  //delete[] outTranspose;
 }

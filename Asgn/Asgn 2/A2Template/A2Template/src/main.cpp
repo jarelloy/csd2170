@@ -69,10 +69,10 @@ void correctness_test(int nRun,int numARows, int numACols, int numBCols)
       {
         int i{ y * numARows + x };
 
-        cpuOFS.width(10);
+        cpuOFS.width(15);
         cpuOFS << std::fixed << std::setprecision(2) << cpuOut[i] << ' ';
         
-        gpuOFS.width(10);
+        gpuOFS.width(15);
         gpuOFS << std::fixed << std::setprecision(2) << gpuOut[i] << ' ';
       }
       cpuOFS << '\n';
@@ -86,7 +86,11 @@ void correctness_test(int nRun,int numARows, int numACols, int numBCols)
     //Check to see if match
     for (int i{}; i < numARows * numBCols; ++i)
     {
-      assert(std::abs(cpuOut[i] - gpuOut[i]) <= epsilon);
+      if (std::abs(cpuOut[i] - gpuOut[i]) > epsilon)
+      {
+        std::cout << "Failed at -- ARow, ACol, BCol -- " << numARows << ", " << numACols << ", " << numBCols << '\n';
+        assert(std::abs(cpuOut[i] - gpuOut[i]) <= epsilon);
+      }
     }
 
     delete[] cpuOut;
@@ -112,10 +116,12 @@ void efficiency_test(int nRun, int numARows, int numACols, int numBCols)
 
 int main(int argc, char** argv)
 {
-  correctness_test(1, 3, 3, 3); //Mat * mat simulation
+  //correctness_test(1, 3, 3, 3); //Mat * mat simulation
   //correctness_test(1, 8, 4, 8); //Mat * mat simulation
   //correctness_test(1, 8, 8, 8); //Mat * mat simulation
+  correctness_test(1, 12,34,56); //Mat * mat simulation
   //correctness_test(1, 16, 16, 16); //Mat * mat simulation
+  //correctness_test(1, 200,200,200); //Mat * mat simulation
   //correctness_test(1, 256,256,256); //Mat * mat simulation
 
 	//correctness_test(1, 101 - rand() % 10, 101 - rand() % 10, 101 - rand() % 10);
