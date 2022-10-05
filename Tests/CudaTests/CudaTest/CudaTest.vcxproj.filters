@@ -37,5 +37,16 @@
     <CudaCompile Include="Diverence_1D.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
+    <CudaCompile Include="Quiz3_q6.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="MatAdd_2D.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="MatAdd_2D.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

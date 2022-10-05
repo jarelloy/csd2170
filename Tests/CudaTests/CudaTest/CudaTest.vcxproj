@@ -150,8 +150,13 @@
   <ItemGroup>
     <CudaCompile Include="Diverence_1D.cu" />
     <CudaCompile Include="IntAdder.cu" />
+    <CudaCompile Include="MatAdd_2D.cu" />
     <CudaCompile Include="MatrixMultiplication.cu" />
+    <CudaCompile Include="Quiz3_q6.cu" />
     <CudaCompile Include="WarpDivergence.cu" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="MatAdd_2D.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
