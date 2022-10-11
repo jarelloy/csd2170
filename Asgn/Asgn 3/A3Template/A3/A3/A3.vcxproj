@@ -144,6 +144,14 @@
       <AdditionalDependencies>vulkan-1.lib;glfw3.lib; %(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Vendor\glfw\glfw\lib-vc2022;$(VULKAN_SDK)\Lib;$(SolutionDir)Vendor\ktx\lib</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>echo 'hi'
+call "$(SolutionDir)data\shaders\glsl\computeshader\compile.bat"</Command>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>echo 'hi'
+call "$(SolutionDir)data\shaders\glsl\computeshader\compile.bat"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\imgui\imgui.cpp" />
@@ -186,6 +194,14 @@
     <ClInclude Include="..\src\vktexture.h" />
     <ClInclude Include="..\src\vktools.h" />
     <ClInclude Include="..\src\vkuioverlay.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\data\shaders\glsl\computeshader\kirsch.comp">
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"E:\Documents\_Digipen\_Digipen Y3S1\csd2170 (massive)\csd2170\Asgn\Asgn 3\A3Template\A3\Vendor\glslc.exe" "%(FullPath)" -o "E:\Documents\_Digipen\_Digipen Y3S1\csd2170 (massive)\csd2170\Asgn\Asgn 3\A3Template\A3\data\shaders\glsl\computeshader\%(FileName).spv"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">\%(FileName).spv</Outputs>
+    </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

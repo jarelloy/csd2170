@@ -549,7 +549,8 @@ public:
 		// One pipeline for each effect
 		shaderNames = { "emboss" };
 		for (auto& shaderName : shaderNames) {
-			std::string fileName = getShadersPath() + "computeshader/" + shaderName + ".comp.spv";
+			std::string fileName = getShadersPath() + "computeshader/" + shaderName + ".spv";
+			//std::string fileName = getShadersPath() + "computeshader/" + shaderName + ".comp.spv";
 			computePipelineCreateInfo.stage = loadShader(fileName, VK_SHADER_STAGE_COMPUTE_BIT);
 			VkPipeline pipeline;
 			VK_CHECK_RESULT(vkCreateComputePipelines(device, pipelineCache, 1, &computePipelineCreateInfo, nullptr, &pipeline));
