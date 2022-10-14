@@ -1,4 +1,18 @@
-//todo header
+/* Start Header *****************************************************************/
+
+/*! \file kirsch.comp
+
+  \author Derwin Yan Hong Rui 2000579
+
+  \par h.yan@digipen.edu
+
+  \date 14 Oct 2022
+
+  \brief Copyright (C) 2022 DigiPen Institute of Technology.
+
+Reproduction or disclosure of this file or its contents without the prior written consent of DigiPen Institute of Technology is prohibited. */
+
+/* End Header *******************************************************************/
 
 
 #version 450
@@ -69,7 +83,8 @@ void main()
     uint sharedY = tID / SHARED_SIZE;
     uint uvX = gl_WorkGroupID.x * BLOCK_SIZE + sharedX - MASK_RADIUS; //Offset by half mask width
     uint uvY = gl_WorkGroupID.y * BLOCK_SIZE + sharedY - MASK_RADIUS;
-    sData[sharedY][sharedX] = imageLoad(inputImage, ivec2(uvX, uvY)).rgb;
+    if (sharedY < SHARED_SIZE && sharedX < SHARED_SIZE)
+      sData[sharedY][sharedX] = imageLoad(inputImage, ivec2(uvX, uvY)).rgb;
   }
   memoryBarrierShared();
   barrier();
@@ -84,18 +99,14 @@ void main()
     {
       for (int x = -1; x <= 1; ++x)
       {
-        localSum += sData[gl_LocalInvocationID.y + y+1][gl_LocalInvocationID.x + x+1] * kirsch[mID][y+1][x+1];
+        //Thread ID shift right and down once to centralize in shared memory then add y and x 
+        localSum += sData[gl_LocalInvocationID.y+1 + y][gl_LocalInvocationID.x+1 + x] * kirsch[mID][y+1][x+1];
       }
     }
 
-    maxSum = max(localSum, maxSum);
+    maxSum = max(localSum, maxSum); //GLSL does component wise max
   }
-  
 
   imageStore(resultImage, ivec2(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y), 
     vec4(min(max(maxSum / 8, 0), 1.0), 1.0));
 }
- 	
- 
- 
- 
