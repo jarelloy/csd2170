@@ -547,7 +547,8 @@ public:
 			vks::initializers::computePipelineCreateInfo(compute.pipelineLayout, 0);
 
 		// One pipeline for each effect
-		shaderNames = { "emboss" };
+		shaderNames = { "kirsch" };
+		//shaderNames = { "emboss" };
 		for (auto& shaderName : shaderNames) {
 			std::string fileName = getShadersPath() + "computeshader/" + shaderName + ".spv";
 			//std::string fileName = getShadersPath() + "computeshader/" + shaderName + ".comp.spv";

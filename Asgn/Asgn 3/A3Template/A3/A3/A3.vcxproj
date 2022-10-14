@@ -199,9 +199,13 @@ call "$(SolutionDir)data\shaders\glsl\computeshader\compile.bat"</Command>
     <CustomBuild Include="..\data\shaders\glsl\computeshader\kirsch.comp">
       <FileType>Document</FileType>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"E:\Documents\_Digipen\_Digipen Y3S1\csd2170 (massive)\csd2170\Asgn\Asgn 3\A3Template\A3\Vendor\glslc.exe" "%(FullPath)" -o "E:\Documents\_Digipen\_Digipen Y3S1\csd2170 (massive)\csd2170\Asgn\Asgn 3\A3Template\A3\data\shaders\glsl\computeshader\%(FileName).spv"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(SolutionDir)Vendor\glslc.exe" "%(FullPath)" -o "$(SolutionDir)data\shaders\glsl\computeshader\%(FileName).spv"</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">\%(FileName).spv</Outputs>
     </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\data\shaders\glsl\computeshader\edgedetect.comp" />
+    <None Include="..\data\shaders\glsl\computeshader\emboss.comp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,6 +1,15 @@
+//todo header
+// Notes: Image origin is topleft
+
 #version 450
 
-layout (local_size_x = 16, local_size_y = 16) in;
+#define BLOCK_SIZE 16
+#define MASK_SIZE 3
+#define SHARED_SIZE BLOCK_SIZE + MASK_SIZE - 1
+#define MASK_RADIUS MASK_SIZE / 2
+ 
+
+layout (local_size_x = BLOCK_SIZE, local_size_y = BLOCK_SIZE) in;
 layout (binding = 0, rgba8) uniform readonly image2D inputImage;
 layout (binding = 1, rgba8) uniform image2D resultImage;
 
@@ -48,12 +57,35 @@ const float kirsch[8][3][3] = {
     };
 
 //two extra row/col
-shared vec3 sData[16+2][16+2];
+shared vec3 sData[SHARED_SIZE][SHARED_SIZE];
 
 void main()
 {
-  //your code here	
-  //just a new comment...
+  //Load shared data
+  uint tID = gl_LocalInvocationID.y * BLOCK_SIZE + gl_LocalInvocationID.x;
+  uint sharedX = tID % SHARED_SIZE;
+  uint sharedY = tID / SHARED_SIZE;
+  uint uvX = gl_WorkGroupID.x * BLOCK_SIZE + sharedX - MASK_RADIUS; //Offset by half mask width
+  uint uvY = gl_WorkGroupID.y * BLOCK_SIZE + sharedY - MASK_RADIUS;
+  sData[sharedY][sharedX] = imageLoad(inputImage, ivec2(uvX, uvY)).rgb;
+
+  for (int y = 0; y < SHARED_SIZE; ++y) {
+    for (int x = 0; x < SHARED_SIZE; ++x) {
+      sData[y][x] = vec3(0.0);
+    }
+  }
+
+  for (int y = 0; y < 9; ++y) {
+    for (int x = 0; x < 9; ++x) {
+      sData[y][x] = vec3(1.0);
+    }
+  }
+
+  memoryBarrierShared();
+  barrier();
+
+  imageStore(resultImage, ivec2(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y), 
+    vec4(sData[sharedY][sharedX], 1.0));
 }
  	
  

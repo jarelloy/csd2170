@@ -137,4 +137,12 @@
       <Filter>Resource Files</Filter>
     </CustomBuild>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\data\shaders\glsl\computeshader\edgedetect.comp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\data\shaders\glsl\computeshader\emboss.comp">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>
