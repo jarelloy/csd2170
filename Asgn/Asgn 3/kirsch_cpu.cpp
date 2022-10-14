@@ -29,10 +29,13 @@ extern "C" void kirschEdgeDetectorCPU(
 					int sum1, sum2, sum3;
 					sum = 0;
 					/* Convolution part */
-					if (i >= 1 && i + 1 < height && j >= 1 && j+1 < width) {
+					if (i >= 1 && i + 1 < height && j >= 1 && j+1 < width) 
+          {
 						//no ghost cell
-						for (int k = -1; k < 2; k++) {
-							for (int l = -1; l < 2; l++) {
+						for (int k = -1; k < 2; k++) 
+            {
+							for (int l = -1; l < 2; l++) 
+              {
 #ifdef COLOR_INTERLEAVE
 								sum =
 									sum + *(mask + m * 9 + (k + 1)*channels + (l + 1))*
@@ -45,9 +48,11 @@ extern "C" void kirschEdgeDetectorCPU(
 							}
 						}
 					}
-					else {
+					else 
+          {
 						for (int k = -1; k < 2; k++)
-							for (int l = -1; l < 2; l++) {
+							for (int l = -1; l < 2; l++) 
+              {
 								if (i + k >= 0 && i + k < height && j + l >= 0 && j + l < width)
 #ifdef COLOR_INTERLEAVE
 									sum =

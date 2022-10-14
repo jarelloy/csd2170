@@ -1,5 +1,5 @@
 //todo header
-// Notes: Image origin is topleft
+
 
 #version 450
 
@@ -61,9 +61,9 @@ shared vec3 sData[SHARED_SIZE][SHARED_SIZE];
 
 void main()
 {
+  //Load shared data
   for (int iter = 0; iter <= (SHARED_SIZE * SHARED_SIZE) / (BLOCK_SIZE * BLOCK_SIZE); ++iter)
-  {
-    //Load shared data
+  {  
     uint tID = gl_LocalInvocationID.y * BLOCK_SIZE + gl_LocalInvocationID.x + iter * (BLOCK_SIZE * BLOCK_SIZE);
     uint sharedX = tID % SHARED_SIZE;
     uint sharedY = tID / SHARED_SIZE;
@@ -71,13 +71,29 @@ void main()
     uint uvY = gl_WorkGroupID.y * BLOCK_SIZE + sharedY - MASK_RADIUS;
     sData[sharedY][sharedX] = imageLoad(inputImage, ivec2(uvX, uvY)).rgb;
   }
-
-
   memoryBarrierShared();
   barrier();
 
+  //Perform convolution
+  vec3 maxSum = vec3(0.0);
+  for (int mID = 0; mID < 8; ++mID)
+  {
+    vec3 localSum = vec3(0.0);
+
+    for (int y = -1; y <= 1; ++y)
+    {
+      for (int x = -1; x <= 1; ++x)
+      {
+        localSum += sData[gl_LocalInvocationID.y + y+1][gl_LocalInvocationID.x + x+1] * kirsch[mID][y+1][x+1];
+      }
+    }
+
+    maxSum = max(localSum, maxSum);
+  }
+  
+
   imageStore(resultImage, ivec2(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y), 
-    vec4(sData[gl_LocalInvocationIndex / SHARED_SIZE][gl_LocalInvocationIndex % SHARED_SIZE], 1.0));
+    vec4(min(max(maxSum / 8, 0), 1.0), 1.0));
 }
  	
  
