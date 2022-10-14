@@ -5,8 +5,8 @@
 
 #define BLOCK_SIZE 16
 #define MASK_SIZE 3
-#define SHARED_SIZE BLOCK_SIZE + MASK_SIZE - 1
-#define MASK_RADIUS MASK_SIZE / 2
+#define SHARED_SIZE (BLOCK_SIZE + MASK_SIZE - 1)
+#define MASK_RADIUS (MASK_SIZE / 2)
  
 
 layout (local_size_x = BLOCK_SIZE, local_size_y = BLOCK_SIZE) in;
@@ -61,31 +61,23 @@ shared vec3 sData[SHARED_SIZE][SHARED_SIZE];
 
 void main()
 {
-  //Load shared data
-  uint tID = gl_LocalInvocationID.y * BLOCK_SIZE + gl_LocalInvocationID.x;
-  uint sharedX = tID % SHARED_SIZE;
-  uint sharedY = tID / SHARED_SIZE;
-  uint uvX = gl_WorkGroupID.x * BLOCK_SIZE + sharedX - MASK_RADIUS; //Offset by half mask width
-  uint uvY = gl_WorkGroupID.y * BLOCK_SIZE + sharedY - MASK_RADIUS;
-  sData[sharedY][sharedX] = imageLoad(inputImage, ivec2(uvX, uvY)).rgb;
-
-  for (int y = 0; y < SHARED_SIZE; ++y) {
-    for (int x = 0; x < SHARED_SIZE; ++x) {
-      sData[y][x] = vec3(0.0);
-    }
+  for (int iter = 0; iter <= (SHARED_SIZE * SHARED_SIZE) / (BLOCK_SIZE * BLOCK_SIZE); ++iter)
+  {
+    //Load shared data
+    uint tID = gl_LocalInvocationID.y * BLOCK_SIZE + gl_LocalInvocationID.x + iter * (BLOCK_SIZE * BLOCK_SIZE);
+    uint sharedX = tID % SHARED_SIZE;
+    uint sharedY = tID / SHARED_SIZE;
+    uint uvX = gl_WorkGroupID.x * BLOCK_SIZE + sharedX - MASK_RADIUS; //Offset by half mask width
+    uint uvY = gl_WorkGroupID.y * BLOCK_SIZE + sharedY - MASK_RADIUS;
+    sData[sharedY][sharedX] = imageLoad(inputImage, ivec2(uvX, uvY)).rgb;
   }
 
-  for (int y = 0; y < 9; ++y) {
-    for (int x = 0; x < 9; ++x) {
-      sData[y][x] = vec3(1.0);
-    }
-  }
 
   memoryBarrierShared();
   barrier();
 
   imageStore(resultImage, ivec2(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y), 
-    vec4(sData[sharedY][sharedX], 1.0));
+    vec4(sData[gl_LocalInvocationIndex / SHARED_SIZE][gl_LocalInvocationIndex % SHARED_SIZE], 1.0));
 }
  	
  
