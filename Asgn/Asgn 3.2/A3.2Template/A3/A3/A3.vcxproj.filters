@@ -132,4 +132,20 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\data\shaders\glsl\computeshader\histogram.comp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\data\shaders\glsl\computeshader\applyhisto.comp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\data\shaders\glsl\computeshader\cdfScan.comp">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\data\shaders\glsl\computeshader\kirsch.comp">
+      <Filter>Resource Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
 </Project>
