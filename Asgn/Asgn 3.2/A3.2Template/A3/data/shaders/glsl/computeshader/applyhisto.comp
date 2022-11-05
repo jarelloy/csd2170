@@ -12,8 +12,17 @@ layout(std140, binding = 2) buffer outHistogram
    float cdf[256];
 };
 
+float ColorCorrection(float currentCDF, float minCDF)
+{
+  return clamp(1.0 * (currentCDF - minCDF) / (1.0 - minCDF), 0.0, 1.0);
+}
+
 void main()
 {
+  float cdfMin = cdf[0];
+
+  vec3 pixel = imageLoad(inputImage, ivec2(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y)).rgb;
+
   imageStore(resultImage, ivec2(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y),
     vec4(float(gl_LocalInvocationID.x) / 16.0, float(gl_LocalInvocationID.y) / 16.0, 1.0, 1.0));
 }
