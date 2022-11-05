@@ -31,6 +31,7 @@ class VulkanExample : public VkAppBase
 private:
 	vks::Texture2D textureColorMap;
 	vks::Texture2D textureComputeTarget;
+  vks::Buffer    storageBuffer;
 public:
 	struct {
 		VkPipelineVertexInputStateCreateInfo inputState;
@@ -60,6 +61,12 @@ public:
 		std::vector<VkPipeline> pipelines;			// Compute pipelines for image filters
 		int32_t pipelineIndex = 0;					// Current image filtering compute pipeline index
 	} compute;
+
+  struct HistoSSBO
+  {
+    unsigned histogram[256]{};
+    float cdf[256]{};
+  };
 
 	vks::Buffer vertexBuffer;
 	vks::Buffer indexBuffer;
@@ -295,17 +302,59 @@ public:
 	{
 		// Flush the queue if we're rebuilding the command buffer after a pipeline change to ensure it's not currently in use
 		vkQueueWaitIdle(compute.queue);
-
 		VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
-
 		VK_CHECK_RESULT(vkBeginCommandBuffer(compute.commandBuffer, &cmdBufInfo));
 
-		vkCmdBindPipeline(compute.commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, compute.pipelines[compute.pipelineIndex]);
+    //First pass: Compute histogram
+    //=============================
+		vkCmdBindPipeline(compute.commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, compute.pipelines[0]);
 		vkCmdBindDescriptorSets(compute.commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, compute.pipelineLayout, 0, 1, &compute.descriptorSet, 0, 0);
-		//groupCountX is the number of local workgroups to dispatch in the X dimension.
-		//groupCountY is the number of local workgroups to dispatch in the Y dimension.
-		//groupCountZ is the number of local workgroups to dispatch in the Z dimension.
 		vkCmdDispatch(compute.commandBuffer, (textureComputeTarget.width + 15)/ 16, (textureComputeTarget.height + 15) / 16, 1);
+
+    //SSBO memory barrier
+    VkBufferMemoryBarrier bufferBarrier = vks::initializers::bufferMemoryBarrier();
+    bufferBarrier.buffer = storageBuffer.buffer;
+    bufferBarrier.size = storageBuffer.descriptor.range;
+    bufferBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+    bufferBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+    // Transfer ownership if compute and graphics queue family indices differ
+    bufferBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    bufferBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    vkCmdPipelineBarrier(
+      compute.commandBuffer,
+      VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+      VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+      VK_FLAGS_NONE,
+      0, nullptr,
+      1, &bufferBarrier,
+      0, nullptr);
+
+    //Second pass: CDF Scan
+    //=====================
+    vkCmdBindPipeline(compute.commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, compute.pipelines[1]);
+    vkCmdDispatch(compute.commandBuffer, 256, 1, 1);
+
+    //SSBO memory barrier
+    VkBufferMemoryBarrier buffer__Barrier = vks::initializers::bufferMemoryBarrier();
+    buffer__Barrier.buffer = storageBuffer.buffer;
+    buffer__Barrier.size = storageBuffer.descriptor.range;
+    buffer__Barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+    buffer__Barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+    // Transfer ownership if compute and graphics queue family indices differ
+    buffer__Barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    buffer__Barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    vkCmdPipelineBarrier(
+      compute.commandBuffer,
+      VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+      VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+      VK_FLAGS_NONE,
+      0, nullptr,
+      1, &buffer__Barrier,
+      0, nullptr);
+
+    //Third pass: Histogram equalization
+    vkCmdBindPipeline(compute.commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, compute.pipelines[2]);
+    vkCmdDispatch(compute.commandBuffer, (textureComputeTarget.width + 15) / 16, (textureComputeTarget.height + 15) / 16, 1);
 
 		vkEndCommandBuffer(compute.commandBuffer);
 	}
@@ -511,8 +560,31 @@ public:
 		VK_CHECK_RESULT(vkQueueWaitIdle(queue));
 	}
 
+  void PrepareSSBO()
+  {
+    HistoSSBO histogramData{};
+    VkDeviceSize storageBufferSize = sizeof(HistoSSBO);
+
+    //SSBO will be GPU only memory
+    vks::Buffer stagingBuffer;
+    vulkanDevice->createBuffer(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+      &stagingBuffer, storageBufferSize, &histogramData);
+    vulkanDevice->createBuffer(VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+      &storageBuffer, storageBufferSize);
+
+    //Copy staging to device only
+    VkCommandBuffer copyCmd = vulkanDevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+    VkBufferCopy copyRegion = {};
+    copyRegion.size = storageBufferSize;
+    vkCmdCopyBuffer(copyCmd, stagingBuffer.buffer, storageBuffer.buffer, 1, &copyRegion);
+
+    vulkanDevice->flushCommandBuffer(copyCmd, queue, true);
+    stagingBuffer.destroy();
+  }
+
 	void prepareCompute()
 	{
+    PrepareSSBO();
 		// Get a compute queue from the device
 		vkGetDeviceQueue(device, vulkanDevice->queueFamilyIndices.compute, 0, &compute.queue);
 
@@ -524,6 +596,8 @@ public:
 			vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT, 0),
 			// Binding 1: Output image (write)
 			vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT, 1),
+      // Binding 2: Histogram SSBO (read-write)
+      vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT, 2)
 		};
 
 		VkDescriptorSetLayoutCreateInfo descriptorLayout = vks::initializers::descriptorSetLayoutCreateInfo(setLayoutBindings);
@@ -531,25 +605,24 @@ public:
 
 		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
 			vks::initializers::pipelineLayoutCreateInfo(&compute.descriptorSetLayout, 1);
-
 		VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pPipelineLayoutCreateInfo, nullptr, &compute.pipelineLayout));
 
 		VkDescriptorSetAllocateInfo allocInfo =
 			vks::initializers::descriptorSetAllocateInfo(descriptorPool, &compute.descriptorSetLayout, 1);
-
 		VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &compute.descriptorSet));
+
 		std::vector<VkWriteDescriptorSet> computeWriteDescriptorSets = {
-			vks::initializers::writeDescriptorSet(compute.descriptorSet, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 0, &textureColorMap.descriptor),
-			vks::initializers::writeDescriptorSet(compute.descriptorSet, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, &textureComputeTarget.descriptor)
+			vks::initializers::writeDescriptorSet(compute.descriptorSet, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,  0, &textureColorMap.descriptor),
+			vks::initializers::writeDescriptorSet(compute.descriptorSet, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,  1, &textureComputeTarget.descriptor),
+			vks::initializers::writeDescriptorSet(compute.descriptorSet, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 2, &storageBuffer.descriptor)
 		};
 		vkUpdateDescriptorSets(device, computeWriteDescriptorSets.size(), computeWriteDescriptorSets.data(), 0, NULL);
 
 		// Create compute shader pipelines
-		VkComputePipelineCreateInfo computePipelineCreateInfo =
-			vks::initializers::computePipelineCreateInfo(compute.pipelineLayout, 0);
+		VkComputePipelineCreateInfo computePipelineCreateInfo = vks::initializers::computePipelineCreateInfo(compute.pipelineLayout, 0);
 
-		// One pipeline for each effect
-		shaderNames = { "emboss" };
+		// First pass
+		shaderNames = { "histogram", "cdfScan", "applyhisto" };
 		for (auto& shaderName : shaderNames) {
 			std::string fileName = getShadersPath() + "computeshader/" + shaderName + ".comp.spv";
 			computePipelineCreateInfo.stage = loadShader(fileName, VK_SHADER_STAGE_COMPUTE_BIT);

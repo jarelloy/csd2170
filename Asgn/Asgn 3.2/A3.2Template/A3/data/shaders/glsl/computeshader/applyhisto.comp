@@ -1,0 +1,19 @@
+
+#version 450
+
+#define BLOCK_SIZE 16
+
+layout (local_size_x = BLOCK_SIZE, local_size_y = BLOCK_SIZE) in;
+layout (binding = 0, rgba8) uniform readonly image2D inputImage;
+layout (binding = 1, rgba8) uniform image2D resultImage;
+layout(std140, binding = 2) buffer outHistogram
+{
+   uint histoBin[256];
+   float cdf[256];
+};
+
+void main()
+{
+  imageStore(resultImage, ivec2(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y),
+    vec4(float(gl_LocalInvocationID.x) / 16.0, float(gl_LocalInvocationID.y) / 16.0, 1.0, 1.0));
+}

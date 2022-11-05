@@ -188,9 +188,24 @@
     <ClInclude Include="..\src\vkuioverlay.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\data\shaders\glsl\computeshader\applyhisto.comp" />
-    <None Include="..\data\shaders\glsl\computeshader\cdfScan.comp" />
-    <None Include="..\data\shaders\glsl\computeshader\histogram.comp" />
+    <CustomBuild Include="..\data\shaders\glsl\computeshader\applyhisto.comp">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(SolutionDir)Vendor\glslc.exe" "%(FullPath)" -o "$(SolutionDir)data\shaders\glsl\computeshader\%(FileName).comp.spv"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">\%(FileName).comp.spv</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\data\shaders\glsl\computeshader\cdfScan.comp">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">\%(FileName).comp.spv</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(SolutionDir)Vendor\glslc.exe" "%(FullPath)" -o "$(SolutionDir)data\shaders\glsl\computeshader\%(FileName).comp.spv"</Command>
+    </CustomBuild>
+    <CustomBuild Include="..\data\shaders\glsl\computeshader\histogram.comp">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(SolutionDir)Vendor\glslc.exe" "%(FullPath)" -o "$(SolutionDir)data\shaders\glsl\computeshader\%(FileName).comp.spv"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">\%(FileName).comp.spv</Outputs>
+    </CustomBuild>
     <CustomBuild Include="..\data\shaders\glsl\computeshader\kirsch.comp">
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
       <FileType>Document</FileType>
