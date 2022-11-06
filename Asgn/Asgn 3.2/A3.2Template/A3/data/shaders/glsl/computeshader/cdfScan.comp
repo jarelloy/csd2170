@@ -23,7 +23,6 @@ void main()
 {
   vec2 imgSize = vec2(imageSize(inputImage));
 
-  //histo[gl_LocalInvocationIndex].cdf = float(histo[gl_LocalInvocationIndex].bin) / (imgSize.x * imgSize.y);
   sData[gl_LocalInvocationIndex] = float(histo[gl_LocalInvocationIndex].bin) / (imgSize.x * imgSize.y);
 
   //Using Hillis-steele parallel scan (Work inefficient as num processors match num data)

@@ -18,7 +18,7 @@
 #include <GLFW/glfw3.h>
 
 #define VERTEX_BUFFER_BIND_ID 0
-#define ENABLE_VALIDATION true
+#define ENABLE_VALIDATION false
 
 // Vertex layout for this example
 struct Vertex {

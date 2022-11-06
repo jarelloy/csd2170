@@ -293,10 +293,9 @@ VkResult VkAppBase::createInstance(bool enableValidation)
 		if (settings.validation)
 		{
 			instanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-      instanceCreateInfo.enabledExtensionCount = (uint32_t)instanceExtensions.size();
-      instanceCreateInfo.ppEnabledExtensionNames = instanceExtensions.data();
 		}
-		
+    instanceCreateInfo.enabledExtensionCount = (uint32_t)instanceExtensions.size();
+    instanceCreateInfo.ppEnabledExtensionNames = instanceExtensions.data();
 	}
 
 	// The VK_LAYER_KHRONOS_validation contains all current validation functionality.
@@ -322,8 +321,17 @@ VkResult VkAppBase::createInstance(bool enableValidation)
 		//	std::cerr << "Validation layer VK_LAYER_KHRONOS_validation not present, validation is disabled";
 		//}
 
-  instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(requestedLayers.size());
-  instanceCreateInfo.ppEnabledLayerNames = requestedLayers.data();
+  if (settings.validation)
+  {
+    instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(requestedLayers.size());
+    instanceCreateInfo.ppEnabledLayerNames = requestedLayers.data();
+  }
+
+  else
+  {
+    instanceCreateInfo.enabledLayerCount = 0;
+    instanceCreateInfo.ppEnabledLayerNames = nullptr;
+  }
 
 	return vkCreateInstance(&instanceCreateInfo, nullptr, &instance);
 }

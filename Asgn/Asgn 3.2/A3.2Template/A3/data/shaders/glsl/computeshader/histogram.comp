@@ -21,7 +21,7 @@ shared uint sData[BLOCK_SIZE * BLOCK_SIZE];
 
 void main()
 {
-  //histo[gl_LocalInvocationIndex].bin = 0;
+  //Reset CDF values to 0 and initialize shared memory to 0
   histo[gl_LocalInvocationIndex].cdf = 0.0;
   sData[gl_LocalInvocationIndex] = 0;
 
@@ -33,7 +33,7 @@ void main()
   vec3 pixel = imageLoad(inputImage, ivec2(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y)).rgb * 255.0;
   float yValue = pixel.r * 0.299 + pixel.g * 0.587 + pixel.b * 0.114;
 
-  yValue = clamp(yValue, 0.0, 255.0); //map to [0,255]
+  yValue = clamp(yValue, 0.0, 255.0);
   atomicAdd(sData[int(yValue)], 1);
 
   memoryBarrierShared();
