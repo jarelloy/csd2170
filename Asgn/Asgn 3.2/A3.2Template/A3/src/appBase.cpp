@@ -299,29 +299,31 @@ VkResult VkAppBase::createInstance(bool enableValidation)
 	}
 
 	// The VK_LAYER_KHRONOS_validation contains all current validation functionality.
-	const char* validationLayerName = "VK_LAYER_KHRONOS_validation";
-	if (settings.validation)
-	{
-		// Check if this layer is available at instance level
-		uint32_t instanceLayerCount;
-		vkEnumerateInstanceLayerProperties(&instanceLayerCount, nullptr);
-		std::vector<VkLayerProperties> instanceLayerProperties(instanceLayerCount);
-		vkEnumerateInstanceLayerProperties(&instanceLayerCount, instanceLayerProperties.data());
-		bool validationLayerPresent = false;
-		for (VkLayerProperties layer : instanceLayerProperties) {
-			if (strcmp(layer.layerName, validationLayerName) == 0) {
-				validationLayerPresent = true;
-				break;
-			}
-		}
-		if (validationLayerPresent) {
-			instanceCreateInfo.ppEnabledLayerNames = &validationLayerName;
-			instanceCreateInfo.enabledLayerCount = 1;
-		}
-		else {
-			std::cerr << "Validation layer VK_LAYER_KHRONOS_validation not present, validation is disabled";
-		}
-	}
+  std::vector<const char*> requestedLayers = { "VK_LAYER_KHRONOS_validation", "VK_LAYER_RENDERDOC_Capture"} ;
+
+		//// Check if this layer is available at instance level
+		//uint32_t instanceLayerCount;
+		//vkEnumerateInstanceLayerProperties(&instanceLayerCount, nullptr);
+		//std::vector<VkLayerProperties> instanceLayerProperties(instanceLayerCount);
+		//vkEnumerateInstanceLayerProperties(&instanceLayerCount, instanceLayerProperties.data());
+		//bool validationLayerPresent = false;
+		//for (VkLayerProperties layer : instanceLayerProperties) {
+		//	if (strcmp(layer.layerName, validationLayerName) == 0) {
+		//		validationLayerPresent = true;
+		//		break;
+		//	}
+		//}
+		//if (validationLayerPresent) {
+		//	instanceCreateInfo.ppEnabledLayerNames = &validationLayerName;
+		//	instanceCreateInfo.enabledLayerCount = 1;
+		//}
+		//else {
+		//	std::cerr << "Validation layer VK_LAYER_KHRONOS_validation not present, validation is disabled";
+		//}
+
+  instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(requestedLayers.size());
+  instanceCreateInfo.ppEnabledLayerNames = requestedLayers.data();
+
 	return vkCreateInstance(&instanceCreateInfo, nullptr, &instance);
 }
 

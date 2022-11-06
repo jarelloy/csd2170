@@ -5,10 +5,16 @@
 
 layout (local_size_x = BLOCK_SIZE, local_size_y = 1) in;
 layout (binding = 0, rgba8) uniform readonly image2D inputImage;
-layout(std140, binding = 2) buffer outHistogram
+
+struct Histogram
 {
-   uint histoBin[256];
-   float cdf[256];
+  uint bin;
+  float cdf;
+};
+
+layout(std430, binding = 2) buffer outHistogram
+{
+   Histogram histo[256];
 };
 
 shared float sData[256];
@@ -17,7 +23,7 @@ void main()
 {
   vec2 imgSize = vec2(imageSize(inputImage));
 
-  sData[gl_LocalInvocationIndex] = float(histoBin[gl_LocalInvocationIndex]) / (imgSize.x * imgSize.y);
+  sData[gl_LocalInvocationIndex] = float(histo[gl_LocalInvocationIndex].bin) / (imgSize.x * imgSize.y);
 
   //Using Hillis-steele parallel scan (Work inefficient as num processors match num data)
   for (uint stride = 1; stride <= gl_LocalInvocationID.x; stride *= 2)
@@ -27,7 +33,7 @@ void main()
 
     float pdf = 0.0;
     if (gl_LocalInvocationIndex - stride >= 0)
-      pdf = float(histoBin[gl_LocalInvocationIndex - stride]);
+      pdf = float(histo[gl_LocalInvocationIndex - stride].bin);
 
     memoryBarrierShared();
     barrier(); 
@@ -38,5 +44,5 @@ void main()
   memoryBarrierShared();
   barrier(); 
 
-  cdf[gl_LocalInvocationIndex] = sData[gl_LocalInvocationIndex];
+  histo[gl_LocalInvocationIndex].cdf = sData[gl_LocalInvocationIndex];
 }

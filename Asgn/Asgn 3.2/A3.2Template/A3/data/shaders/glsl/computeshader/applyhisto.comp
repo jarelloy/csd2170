@@ -6,11 +6,31 @@
 layout (local_size_x = BLOCK_SIZE, local_size_y = BLOCK_SIZE) in;
 layout (binding = 0, rgba8) uniform readonly image2D inputImage;
 layout (binding = 1, rgba8) uniform image2D resultImage;
-layout(std140, binding = 2) buffer outHistogram
+
+struct Histogram
 {
-   uint histoBin[256];
-   float cdf[256];
+  uint bin;
+  float cdf;
 };
+
+layout(std430, binding = 2) buffer outHistogram
+{
+   Histogram histo[256];
+};
+
+const mat3 YuvMat = mat3 
+(
+  0.299, 0.587, 0.114,
+  -.169, -.331, 0.499,
+  0.499, -.418, -.0813
+);
+
+const mat3 RgbMat = mat3
+(
+  1.0,  0.0,    1.402,
+  1.0, -0.344, -0.714,
+  1.0,  1.772,  0.0
+);
 
 float ColorCorrection(float currentCDF, float minCDF)
 {
@@ -19,10 +39,14 @@ float ColorCorrection(float currentCDF, float minCDF)
 
 void main()
 {
-  float cdfMin = cdf[0];
+  //histo[gl_LocalInvocationIndex].bin = 0;
+  float cdfMin = histo[0].cdf;
 
   vec3 pixel = imageLoad(inputImage, ivec2(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y)).rgb;
+  vec3 yuv = YuvMat * pixel;
+  yuv.x = ColorCorrection(histo[int(yuv.x)].cdf, cdfMin);
+  vec3 newRGB = RgbMat * yuv;
 
   imageStore(resultImage, ivec2(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y),
-    vec4(float(gl_LocalInvocationID.x) / 16.0, float(gl_LocalInvocationID.y) / 16.0, 1.0, 1.0));
+    vec4(newRGB, 1.0));
 }

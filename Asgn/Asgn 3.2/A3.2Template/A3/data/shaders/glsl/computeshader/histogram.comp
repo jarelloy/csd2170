@@ -5,30 +5,43 @@
 
 layout (local_size_x = BLOCK_SIZE, local_size_y = BLOCK_SIZE) in;
 layout (binding = 0, rgba8) uniform readonly image2D inputImage;
-layout(std140, binding = 2) buffer outHistogram
+
+struct Histogram
 {
-   uint histoBin[256];
-   float cdf[256];
+  uint bin;
+  float cdf;
+};
+
+layout(std430, binding = 2) buffer outHistogram
+{
+   Histogram histo[256];
 };
 
 shared uint sData[BLOCK_SIZE * BLOCK_SIZE];
 
 void main()
 {
-  histoBin[gl_LocalInvocationIndex] = 0;
-  cdf[gl_LocalInvocationIndex] = 0.0;
+  histo[gl_LocalInvocationIndex].bin = 0;
+  histo[gl_LocalInvocationIndex].cdf = 0.0;
+  sData[gl_LocalInvocationIndex] = 0;
+
+  memoryBarrierShared();
+  barrier();
 
   //Load and calculate into shared mem then 1 time good 1 send back to global memory
   //Load data into shared mem
-  float pixelR = imageLoad(inputImage, ivec2(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y)).r;
-  float yValue = pixelR * 0.299 + pixelR * 0.587 + pixelR * 0.114;
+  vec3 pixel = imageLoad(inputImage, ivec2(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y)).rgb * 255.0;
+  float yValue = pixel.r * 0.299 + pixel.g * 0.587 + pixel.b * 0.114;
 
-  yValue = clamp(yValue, 0.0, 1.0) * 255.0; //map to [0,255]
+  yValue = clamp(yValue, 0.0, 255.0); //map to [0,255]
   atomicAdd(sData[int(yValue)], 1);
 
   memoryBarrierShared();
   barrier();
 
   //Add back into global memory
-  histoBin[gl_LocalInvocationIndex] += sData[gl_LocalInvocationIndex];
+  histo[gl_LocalInvocationIndex].bin += sData[gl_LocalInvocationIndex];  
+
+  memoryBarrierShared();
+  barrier();
 }
