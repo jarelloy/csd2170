@@ -311,46 +311,46 @@ public:
 		vkCmdBindDescriptorSets(compute.commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, compute.pipelineLayout, 0, 1, &compute.descriptorSet, 0, 0);
 		vkCmdDispatch(compute.commandBuffer, (textureComputeTarget.width + 15)/ 16, (textureComputeTarget.height + 15) / 16, 1);
 
-    //SSBO memory barrier
-    VkBufferMemoryBarrier bufferBarrier = vks::initializers::bufferMemoryBarrier();
-    bufferBarrier.buffer = storageBuffer.buffer;
-    bufferBarrier.size = storageBuffer.descriptor.range;
-    bufferBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-    bufferBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-    // Transfer ownership if compute and graphics queue family indices differ
-    bufferBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    bufferBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    vkCmdPipelineBarrier(
-      compute.commandBuffer,
-      VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-      VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-      VK_FLAGS_NONE,
-      0, nullptr,
-      1, &bufferBarrier,
-      0, nullptr);
+    ////SSBO memory barrier
+    //VkBufferMemoryBarrier bufferBarrier = vks::initializers::bufferMemoryBarrier();
+    //bufferBarrier.buffer = storageBuffer.buffer;
+    //bufferBarrier.size = storageBuffer.descriptor.range;
+    //bufferBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+    //bufferBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+    //// Transfer ownership if compute and graphics queue family indices differ
+    //bufferBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    //bufferBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    //vkCmdPipelineBarrier(
+    //  compute.commandBuffer,
+    //  VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+    //  VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+    //  VK_DEPENDENCY_BY_REGION_BIT,
+    //  0, nullptr,
+    //  1, &bufferBarrier,
+    //  0, nullptr);
 
     //Second pass: CDF Scan
     //=====================
     vkCmdBindPipeline(compute.commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, compute.pipelines[1]);
     vkCmdDispatch(compute.commandBuffer, 256, 1, 1);
 
-    //SSBO memory barrier
-    VkBufferMemoryBarrier buffer__Barrier = vks::initializers::bufferMemoryBarrier();
-    buffer__Barrier.buffer = storageBuffer.buffer;
-    buffer__Barrier.size = storageBuffer.descriptor.range;
-    buffer__Barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-    buffer__Barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-    // Transfer ownership if compute and graphics queue family indices differ
-    buffer__Barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    buffer__Barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    vkCmdPipelineBarrier(
-      compute.commandBuffer,
-      VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-      VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-      VK_FLAGS_NONE,
-      0, nullptr,
-      1, &buffer__Barrier,
-      0, nullptr);
+    ////SSBO memory barrier
+    //VkBufferMemoryBarrier buffer__Barrier = vks::initializers::bufferMemoryBarrier();
+    //buffer__Barrier.buffer = storageBuffer.buffer;
+    //buffer__Barrier.size = storageBuffer.descriptor.range;
+    //buffer__Barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+    //buffer__Barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+    //// Transfer ownership if compute and graphics queue family indices differ
+    //buffer__Barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    //buffer__Barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    //vkCmdPipelineBarrier(
+    //  compute.commandBuffer,
+    //  VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+    //  VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+    //  VK_DEPENDENCY_BY_REGION_BIT,
+    //  0, nullptr,
+    //  1, &buffer__Barrier,
+    //  0, nullptr);
 
     //Third pass: Histogram equalization
     vkCmdBindPipeline(compute.commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, compute.pipelines[2]);
