@@ -293,9 +293,10 @@ VkResult VkAppBase::createInstance(bool enableValidation)
 		if (settings.validation)
 		{
 			instanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+      instanceCreateInfo.enabledExtensionCount = (uint32_t)instanceExtensions.size();
+      instanceCreateInfo.ppEnabledExtensionNames = instanceExtensions.data();
 		}
-		instanceCreateInfo.enabledExtensionCount = (uint32_t)instanceExtensions.size();
-		instanceCreateInfo.ppEnabledExtensionNames = instanceExtensions.data();
+		
 	}
 
 	// The VK_LAYER_KHRONOS_validation contains all current validation functionality.

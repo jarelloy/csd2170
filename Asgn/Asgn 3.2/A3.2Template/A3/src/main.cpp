@@ -566,20 +566,8 @@ public:
     VkDeviceSize storageBufferSize = sizeof(HistoSSBO);
 
     //SSBO will be GPU only memory
-    vks::Buffer stagingBuffer;
-    vulkanDevice->createBuffer(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-      &stagingBuffer, storageBufferSize, &histogramData);
-    vulkanDevice->createBuffer(VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+    vulkanDevice->createBuffer(VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
       &storageBuffer, storageBufferSize);
-
-    //Copy staging to device only
-    VkCommandBuffer copyCmd = vulkanDevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
-    VkBufferCopy copyRegion = {};
-    copyRegion.size = storageBufferSize;
-    vkCmdCopyBuffer(copyCmd, stagingBuffer.buffer, storageBuffer.buffer, 1, &copyRegion);
-
-    vulkanDevice->flushCommandBuffer(copyCmd, queue, true);
-    stagingBuffer.destroy();
   }
 
 	void prepareCompute()
