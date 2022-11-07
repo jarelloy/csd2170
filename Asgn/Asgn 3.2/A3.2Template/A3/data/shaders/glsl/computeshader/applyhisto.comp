@@ -34,7 +34,7 @@ const mat3 RgbMat = mat3
 
 float ColorCorrection(float currentCDF, float minCDF)
 {
-  return clamp(255.0 * (currentCDF - minCDF) / (1.0 - minCDF), 0.0, 255.0);
+  return clamp((currentCDF - minCDF) / (1.0 - minCDF), 0.0, 1.0);
 }
 
 void main()
@@ -42,11 +42,11 @@ void main()
   histo[gl_LocalInvocationIndex].bin = 0;
   float cdfMin = histo[0].cdf;
 
-  vec3 pixel = imageLoad(inputImage, ivec2(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y)).rgb * 255.0;
+  vec3 pixel = imageLoad(inputImage, ivec2(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y)).rgb;
   vec3 yuv = YuvMat * pixel;
-  yuv.x = ColorCorrection(histo[int(yuv.x)].cdf, cdfMin);
-  vec3 newRGB = clamp(RgbMat * yuv, 0.0, 255.0);
+  yuv.x = ColorCorrection(histo[int(yuv.x * 255.0)].cdf, cdfMin);
+  vec3 newRGB = clamp(RgbMat * yuv, 0.0, 1.0);
 
   imageStore(resultImage, ivec2(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y),
-    vec4(newRGB / 255.0, 1.0));
+    vec4(newRGB, 1.0));
 }

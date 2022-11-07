@@ -17,23 +17,24 @@ layout(std430, binding = 2) buffer outHistogram
    Histogram histo[256];
 };
 
-shared float sData[256];
+shared uint sData[256];
 
 void main()
 {
   vec2 imgSize = vec2(imageSize(inputImage));
 
-  sData[gl_LocalInvocationIndex] = float(histo[gl_LocalInvocationIndex].bin) / (imgSize.x * imgSize.y);
+  sData[gl_LocalInvocationIndex] = histo[gl_LocalInvocationIndex].bin;
 
-  //Using Hillis-steele parallel scan (Work inefficient as num processors match num data)
+  //Using Hillis-steele parallel scan 
+  //  (Work inefficient but step efficient as num processors match num data)
   for (uint stride = 1; stride <= gl_LocalInvocationID.x; stride *= 2)
   {
     memoryBarrierShared();
     barrier(); 
 
-    float pdf = 0.0;
+    uint pdf = 0;
     if (gl_LocalInvocationIndex - stride >= 0)
-      pdf = float(sData[gl_LocalInvocationIndex - stride]);
+      pdf = sData[gl_LocalInvocationIndex - stride];
 
     memoryBarrierShared();
     barrier(); 
@@ -44,5 +45,5 @@ void main()
   memoryBarrierShared();
   barrier(); 
 
-  histo[gl_LocalInvocationIndex].cdf = sData[gl_LocalInvocationIndex];
+  histo[gl_LocalInvocationIndex].cdf = float(sData[gl_LocalInvocationIndex]) / (imgSize.x * imgSize.y);
 }

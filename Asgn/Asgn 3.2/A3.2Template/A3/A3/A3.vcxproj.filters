@@ -133,9 +133,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\data\shaders\glsl\computeshader\kirsch.comp">
-      <Filter>Resource Files</Filter>
-    </CustomBuild>
     <CustomBuild Include="..\data\shaders\glsl\computeshader\histogram.comp">
       <Filter>Resource Files</Filter>
     </CustomBuild>

@@ -206,13 +206,6 @@
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(SolutionDir)Vendor\glslc.exe" "%(FullPath)" -o "$(SolutionDir)data\shaders\glsl\computeshader\%(FileName).comp.spv"</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">\%(FileName).comp.spv</Outputs>
     </CustomBuild>
-    <CustomBuild Include="..\data\shaders\glsl\computeshader\kirsch.comp">
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
-      <FileType>Document</FileType>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(SolutionDir)Vendor\glslc.exe" "%(FullPath)" -o "$(SolutionDir)data\shaders\glsl\computeshader\%(FileName).comp.spv"</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">\%(FileName).comp.spv</Outputs>
-    </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
