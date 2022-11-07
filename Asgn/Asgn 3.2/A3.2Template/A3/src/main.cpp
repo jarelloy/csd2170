@@ -332,7 +332,7 @@ public:
     //Second pass: CDF Scan
     //=====================
     vkCmdBindPipeline(compute.commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, compute.pipelines[1]);
-    vkCmdDispatch(compute.commandBuffer, 256, 1, 1);
+    vkCmdDispatch(compute.commandBuffer, 1, 1, 1);
 
     //SSBO memory barrier
     VkBufferMemoryBarrier buffer__Barrier = vks::initializers::bufferMemoryBarrier();
