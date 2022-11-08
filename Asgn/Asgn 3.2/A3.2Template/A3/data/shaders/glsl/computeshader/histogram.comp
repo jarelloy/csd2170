@@ -21,8 +21,7 @@ shared uint sData[BLOCK_SIZE * BLOCK_SIZE];
 
 void main()
 {
-  //Reset CDF values to 0 and initialize shared memory to 0
-  histo[gl_LocalInvocationIndex].cdf = 0.0;
+  //initialize shared memory to 0
   sData[gl_LocalInvocationIndex] = 0;
 
   memoryBarrierShared();

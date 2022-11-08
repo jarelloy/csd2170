@@ -39,7 +39,6 @@ float ColorCorrection(float currentCDF, float minCDF)
 
 void main()
 {
-  histo[gl_LocalInvocationIndex].bin = 0;
   float cdfMin = histo[0].cdf;
 
   vec3 pixel = imageLoad(inputImage, ivec2(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y)).rgb;

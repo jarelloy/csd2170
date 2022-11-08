@@ -301,9 +301,29 @@ public:
 	void buildComputeCommandBuffer()
 	{
 		// Flush the queue if we're rebuilding the command buffer after a pipeline change to ensure it's not currently in use
-		vkQueueWaitIdle(compute.queue);
+		//vkQueueWaitIdle(compute.queue);
 		VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
 		VK_CHECK_RESULT(vkBeginCommandBuffer(compute.commandBuffer, &cmdBufInfo));
+
+    vkCmdFillBuffer(compute.commandBuffer, storageBuffer.buffer, storageBuffer.descriptor.offset, storageBuffer.descriptor.range, 0);
+
+    //SSBO memory barrier
+    VkBufferMemoryBarrier ssboFillBarrier = vks::initializers::bufferMemoryBarrier();
+    ssboFillBarrier.buffer = storageBuffer.buffer;
+    ssboFillBarrier.size = storageBuffer.descriptor.range;
+    ssboFillBarrier.srcAccessMask = VK_ACCESS_MEMORY_WRITE_BIT;
+    ssboFillBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+    // Transfer ownership if compute and graphics queue family indices differ
+    ssboFillBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    ssboFillBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    vkCmdPipelineBarrier(
+      compute.commandBuffer,
+      VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+      VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+      VK_DEPENDENCY_BY_REGION_BIT,
+      0, nullptr,
+      1, &ssboFillBarrier,
+      0, nullptr);
 
     //First pass: Compute histogram
     //=============================
