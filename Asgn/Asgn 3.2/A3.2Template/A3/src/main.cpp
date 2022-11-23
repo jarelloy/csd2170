@@ -636,7 +636,7 @@ public:
 		VkComputePipelineCreateInfo computePipelineCreateInfo = vks::initializers::computePipelineCreateInfo(compute.pipelineLayout, 0);
 
 		// First pass
-		shaderNames = { "histogram", "cdfScan", "applyhisto" };
+		shaderNames = { "histogram", "cdfscan", "applyhisto" };
 		for (auto& shaderName : shaderNames) {
 			std::string fileName = getShadersPath() + "computeshader/" + shaderName + ".comp.spv";
 			computePipelineCreateInfo.stage = loadShader(fileName, VK_SHADER_STAGE_COMPUTE_BIT);

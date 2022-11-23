@@ -136,7 +136,7 @@
     <CustomBuild Include="..\data\shaders\glsl\computeshader\histogram.comp">
       <Filter>Resource Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\data\shaders\glsl\computeshader\cdfScan.comp">
+    <CustomBuild Include="..\data\shaders\glsl\computeshader\cdfscan.comp">
       <Filter>Resource Files</Filter>
     </CustomBuild>
     <CustomBuild Include="..\data\shaders\glsl\computeshader\applyhisto.comp">
