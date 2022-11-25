@@ -19,19 +19,19 @@
 #include "appBase.h"
 #include "vkgltf.h"
 
-#define ENABLE_VALIDATION false
+#define ENABLE_VALIDATION true
 
 class VulkanExample : public VkAppBase
 {
 private:
-	struct {
-		vks::Texture2D colorHeightMap;
-	} textures;
+	//struct {
+	//	vks::Texture2D colorHeightMap;
+	//} textures;
 public:
-	bool splitScreen = false;//true;
+	bool splitScreen = true;//true;
 	bool displacement = true;
 
-	vkglTF::Model plane;
+	//vkglTF::Model plane;
 
 	struct {
 		vks::Buffer tessControl, tessEval;
@@ -44,9 +44,8 @@ public:
 	struct UBOTessEval {
 		glm::mat4 projection;
 		glm::mat4 modelView;
-		glm::vec4 lightPos = glm::vec4(0.0f, -1.0f, 0.0f, 0.0f);
-		float tessAlpha = 1.0f;
-		float tessStrength = 0.1f;
+    glm::vec4 position{0.0f, 0.0f, 0.0f, 0.0f};
+    glm::vec4 paramValues{ 1.0f, 1.0f, 1.0f, 0.0f };
 	} uboTessEval;
 
 	struct Pipelines {
@@ -62,8 +61,8 @@ public:
 	{
 		title = "Tessellation shader displacement";
 		camera.type = Camera::CameraType::lookat;
-		camera.setPosition(glm::vec3(0.0f, 0.0f, -1.25f));
-		camera.setRotation(glm::vec3(-20.0f, 45.0f, 0.0f));
+		camera.setPosition(glm::vec3(0.f, -0.25f, -3.25f));
+		//camera.setRotation(glm::vec3(-20.0f, 45.0f, 0.0f));
 		camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 256.0f);
 	}
 
@@ -81,7 +80,7 @@ public:
 
 		uniformBuffers.tessControl.destroy();
 		uniformBuffers.tessEval.destroy();
-		textures.colorHeightMap.destroy();
+		//textures.colorHeightMap.destroy();
 	}
 
 	// Enable physical device features required for this example
@@ -105,9 +104,9 @@ public:
 
 	void loadAssets()
 	{
-		const uint32_t glTFLoadingFlags = vkglTF::FileLoadingFlags::PreTransformVertices | vkglTF::FileLoadingFlags::PreMultiplyVertexColors | vkglTF::FileLoadingFlags::FlipY;
-		plane.loadFromFile(getAssetPath() + "models/displacement_plane.gltf", vulkanDevice, queue, glTFLoadingFlags);
-		textures.colorHeightMap.loadFromFile(getAssetPath() + "textures/stonefloor03_color_height_rgba.ktx", VK_FORMAT_R8G8B8A8_UNORM, vulkanDevice, queue);
+		//const uint32_t glTFLoadingFlags = vkglTF::FileLoadingFlags::PreTransformVertices | vkglTF::FileLoadingFlags::PreMultiplyVertexColors | vkglTF::FileLoadingFlags::FlipY;
+		//plane.loadFromFile(getAssetPath() + "models/displacement_plane.gltf", vulkanDevice, queue, glTFLoadingFlags);
+		//textures.colorHeightMap.loadFromFile(getAssetPath() + "textures/stonefloor03_color_height_rgba.ktx", VK_FORMAT_R8G8B8A8_UNORM, vulkanDevice, queue);
 	}
 
 	void buildCommandBuffers()
@@ -136,7 +135,8 @@ public:
 
 			vkCmdBeginRenderPass(drawCmdBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-			VkViewport viewport = vks::initializers::viewport((float)width, (float)height, 0.0f, 1.0f);
+			VkViewport viewport = {0, 0, splitScreen ? width / 2 : width , height, 0, 1};
+			//VkViewport viewport = vks::initializers::viewport((float)width, (float)height, 0.0f, 1.0f);
 			vkCmdSetViewport(drawCmdBuffers[i], 0, 1, &viewport);
 
 			VkRect2D scissor = vks::initializers::rect2D(splitScreen ? width / 2 : width, height, 0, 0);
@@ -146,18 +146,22 @@ public:
 
 			vkCmdBindDescriptorSets(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, NULL);
 
-			plane.bindBuffers(drawCmdBuffers[i]);
+			//plane.bindBuffers(drawCmdBuffers[i]);
 
 			if (splitScreen)
 			{
 				vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.wireframe);
-				plane.draw(drawCmdBuffers[i]);
+				//plane.draw(drawCmdBuffers[i]);
+        vkCmdDraw(drawCmdBuffers[i], 3, 1, 0, 0);
 				scissor.offset.x = width / 2;
 				vkCmdSetScissor(drawCmdBuffers[i], 0, 1, &scissor);
+        viewport.x += width / 2;
+        vkCmdSetViewport(drawCmdBuffers[i], 0, 1, &viewport);
 			}
 
 			vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.solid);
-			plane.draw(drawCmdBuffers[i]);
+			//plane.draw(drawCmdBuffers[i]);
+      vkCmdDraw(drawCmdBuffers[i], 3, 1, 0, 0);
 
 			//drawUI(drawCmdBuffers[i]);
 
@@ -171,7 +175,7 @@ public:
 	{
 		std::vector<VkDescriptorPoolSize> poolSizes = {
 			vks::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2),
-			vks::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1)
+			//vks::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1)
 		};
 		VkDescriptorPoolCreateInfo descriptorPoolInfo = vks::initializers::descriptorPoolCreateInfo(poolSizes, 2);
 		VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &descriptorPool));
@@ -191,11 +195,11 @@ public:
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
 				1),
-			// Binding 2 : Combined color (rgb) and height (alpha) map
-			vks::initializers::descriptorSetLayoutBinding(
-				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-				VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-				2),
+			//// Binding 2 : Combined color (rgb) and height (alpha) map
+			//vks::initializers::descriptorSetLayoutBinding(
+			//	VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+			//	VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+			//	2),
 		};
 
 		VkDescriptorSetLayoutCreateInfo descriptorLayout =
@@ -223,8 +227,6 @@ public:
 			vks::initializers::writeDescriptorSet(descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &uniformBuffers.tessControl.descriptor),
 			// Binding 1 : Tessellation evaluation shader ubo
 			vks::initializers::writeDescriptorSet(descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, &uniformBuffers.tessEval.descriptor),
-			// Binding 2 : Color and displacement map (alpha channel)
-			vks::initializers::writeDescriptorSet(descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, &textures.colorHeightMap.descriptor),
 		};
 		vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
 	}
@@ -341,7 +343,7 @@ public:
 	{
 		uboTessEval.projection = camera.matrices.perspective;
 		uboTessEval.modelView = camera.matrices.view;
-		uboTessEval.lightPos.y = -0.5f - uboTessEval.tessStrength;
+		//uboTessEval.lightPos.y = -0.5f - uboTessEval.tessStrength;
 		memcpy(uniformBuffers.tessEval.mapped, &uboTessEval, sizeof(uboTessEval));
 
 		// Tessellation control
@@ -397,24 +399,24 @@ public:
 	}
 	virtual void OnUpdateUIOverlay(vks::UIOverlay* overlay)
 	{
-		if (overlay->header("Settings")) {
-			if (overlay->checkBox("Tessellation displacement", &displacement)) {
-				updateUniformBuffers();
-			}
-			if (overlay->inputFloat("Strength", &uboTessEval.tessStrength, 0.025f, 3)) {
-				updateUniformBuffers();
-			}
-			if (overlay->inputFloat("Level", &uboTessControl.tessLevel, 0.5f, 2)) {
-				updateUniformBuffers();
-			}
-			if (deviceFeatures.fillModeNonSolid) {
-				if (overlay->checkBox("Splitscreen", &splitScreen)) {
-					buildCommandBuffers();
-					updateUniformBuffers();
-				}
-			}
+		//if (overlay->header("Settings")) {
+		//	if (overlay->checkBox("Tessellation displacement", &displacement)) {
+		//		updateUniformBuffers();
+		//	}
+		//	if (overlay->inputFloat("Strength", &uboTessEval.tessStrength, 0.025f, 3)) {
+		//		updateUniformBuffers();
+		//	}
+		//	if (overlay->inputFloat("Level", &uboTessControl.tessLevel, 0.5f, 2)) {
+		//		updateUniformBuffers();
+		//	}
+		//	if (deviceFeatures.fillModeNonSolid) {
+		//		if (overlay->checkBox("Splitscreen", &splitScreen)) {
+		//			buildCommandBuffers();
+		//			updateUniformBuffers();
+		//		}
+		//	}
 
-		}
+		//}
 	}
 };
 
