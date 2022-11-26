@@ -188,24 +188,24 @@
     <ClInclude Include="..\src\vkuioverlay.h" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\data\shaders\glsl\computeshader\base.frag">
+    <CustomBuild Include="..\data\shaders\glsl\computeshader\ellipsoid.frag">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(SolutionDir)Vendor\glslc.exe" "%(FullPath)" -o "$(SolutionDir)data\shaders\glsl\displacement\%(FileName).frag.spv"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(SolutionDir)Vendor\glslc.exe" "%(FullPath)" -o "$(SolutionDir)data\shaders\glsl\a4\%(FileName).frag.spv"</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">\%(FileName).frag.spv</Outputs>
     </CustomBuild>
-    <CustomBuild Include="..\data\shaders\glsl\computeshader\base.vert">
+    <CustomBuild Include="..\data\shaders\glsl\computeshader\ellipsoid.vert">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(SolutionDir)Vendor\glslc.exe" "%(FullPath)" -o "$(SolutionDir)data\shaders\glsl\displacement\%(FileName).vert.spv"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(SolutionDir)Vendor\glslc.exe" "%(FullPath)" -o "$(SolutionDir)data\shaders\glsl\a4\%(FileName).vert.spv"</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">\%(FileName).vert.spv</Outputs>
     </CustomBuild>
-    <CustomBuild Include="..\data\shaders\glsl\computeshader\displacement.tesc">
+    <CustomBuild Include="..\data\shaders\glsl\computeshader\ellipsoid.tesc">
       <FileType>Document</FileType>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">\%(FileName).tesc.spv</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(SolutionDir)Vendor\glslc.exe" "%(FullPath)" -o "$(SolutionDir)data\shaders\glsl\displacement\%(FileName).tesc.spv"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(SolutionDir)Vendor\glslc.exe" "%(FullPath)" -o "$(SolutionDir)data\shaders\glsl\a4\%(FileName).tesc.spv"</Command>
     </CustomBuild>
-    <CustomBuild Include="..\data\shaders\glsl\computeshader\displacement.tese">
+    <CustomBuild Include="..\data\shaders\glsl\computeshader\ellipsoid.tese">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(SolutionDir)Vendor\glslc.exe" "%(FullPath)" -o "$(SolutionDir)data\shaders\glsl\displacement\%(FileName).tese.spv"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(SolutionDir)Vendor\glslc.exe" "%(FullPath)" -o "$(SolutionDir)data\shaders\glsl\a4\%(FileName).tese.spv"</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">\%(FileName).tese.spv</Outputs>
     </CustomBuild>
   </ItemGroup>

@@ -133,16 +133,16 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\data\shaders\glsl\computeshader\base.frag">
+    <CustomBuild Include="..\data\shaders\glsl\computeshader\ellipsoid.frag">
       <Filter>Resource Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\data\shaders\glsl\computeshader\base.vert">
+    <CustomBuild Include="..\data\shaders\glsl\computeshader\ellipsoid.vert">
       <Filter>Resource Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\data\shaders\glsl\computeshader\displacement.tesc">
+    <CustomBuild Include="..\data\shaders\glsl\computeshader\ellipsoid.tesc">
       <Filter>Resource Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\data\shaders\glsl\computeshader\displacement.tese">
+    <CustomBuild Include="..\data\shaders\glsl\computeshader\ellipsoid.tese">
       <Filter>Resource Files</Filter>
     </CustomBuild>
   </ItemGroup>
