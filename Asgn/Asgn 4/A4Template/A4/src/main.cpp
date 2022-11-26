@@ -19,7 +19,7 @@
 #include "appBase.h"
 #include "vkgltf.h"
 
-#define ENABLE_VALIDATION true
+#define ENABLE_VALIDATION false
 
 class VulkanExample : public VkAppBase
 {
@@ -292,6 +292,15 @@ public:
 		shaderStages[2] = loadShader(getShadersPath() + "displacement/displacement.tesc.spv", VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT);
 		shaderStages[3] = loadShader(getShadersPath() + "displacement/displacement.tese.spv", VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT);
 
+    VkPipelineVertexInputStateCreateInfo visci
+    {
+      VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+      nullptr,
+      0, 
+      0, nullptr,
+      0, nullptr
+    };
+
 		VkGraphicsPipelineCreateInfo pipelineCI = vks::initializers::pipelineCreateInfo(pipelineLayout, renderPass);
 		pipelineCI.pInputAssemblyState = &inputAssemblyState;
 		pipelineCI.pRasterizationState = &rasterizationState;
@@ -303,7 +312,8 @@ public:
 		pipelineCI.pTessellationState = &tessellationState;
 		pipelineCI.stageCount = static_cast<uint32_t>(shaderStages.size());
 		pipelineCI.pStages = shaderStages.data();
-		pipelineCI.pVertexInputState = vkglTF::Vertex::getPipelineVertexInputState({ vkglTF::VertexComponent::Position, vkglTF::VertexComponent::Normal, vkglTF::VertexComponent::UV });
+		pipelineCI.pVertexInputState = &visci;
+		//pipelineCI.pVertexInputState = vkglTF::Vertex::getPipelineVertexInputState({ vkglTF::VertexComponent::Position, vkglTF::VertexComponent::Normal, vkglTF::VertexComponent::UV });
 
 		// Solid pipeline
 		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCI, nullptr, &pipelines.solid));
